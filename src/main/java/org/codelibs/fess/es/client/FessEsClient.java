@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,11 +45,13 @@ import org.codelibs.core.io.FileUtil;
 import org.codelibs.core.io.ResourceUtil;
 import org.codelibs.core.lang.StringUtil;
 import org.codelibs.curl.CurlResponse;
+import org.codelibs.elasticsearch.client.HttpClient;
 import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
 import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner.Configs;
 import org.codelibs.fess.Constants;
 import org.codelibs.fess.entity.FacetInfo;
 import org.codelibs.fess.entity.GeoInfo;
+import org.codelibs.fess.entity.HighlightInfo;
 import org.codelibs.fess.entity.PingResponse;
 import org.codelibs.fess.entity.QueryContext;
 import org.codelibs.fess.entity.SearchRequestParams.SearchRequestType;
@@ -75,13 +78,11 @@ import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.flush.FlushResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
@@ -119,6 +120,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.search.SearchScrollRequestBuilder;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.termvectors.MultiTermVectorsRequest;
 import org.elasticsearch.action.termvectors.MultiTermVectorsRequestBuilder;
 import org.elasticsearch.action.termvectors.MultiTermVectorsResponse;
@@ -130,13 +132,10 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.settings.Settings.Builder;
-import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.InnerHitBuilder;
@@ -150,7 +149,6 @@ import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilde
 import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.threadpool.ThreadPool;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.lastaflute.core.message.UserMessages;
 import org.lastaflute.di.exception.ContainerInitFailureException;
 import org.slf4j.Logger;
@@ -158,7 +156,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 
 public class FessEsClient implements Client {
@@ -166,7 +163,7 @@ public class FessEsClient implements Client {
 
     protected ElasticsearchClusterRunner runner;
 
-    protected List<TransportAddress> transportAddressList = new ArrayList<>();
+    protected String httpAddress;
 
     protected Client client;
 
@@ -187,6 +184,8 @@ public class FessEsClient implements Client {
     protected int maxConfigSyncStatusRetry = 10;
 
     protected int maxEsStatusRetry = 10;
+
+    protected String clusterName = "elasticsearch";
 
     public void addIndexConfig(final String path) {
         indexConfigList.add(path);
@@ -218,10 +217,6 @@ public class FessEsClient implements Client {
         return this.runner != null;
     }
 
-    public void addTransportAddress(final String host, final int port) {
-        transportAddressList.add(new TransportAddress(getInetAddressByName(host), port));
-    }
-
     protected InetAddress getInetAddressByName(final String host) {
         try {
             return InetAddress.getByName(host);
@@ -234,27 +229,11 @@ public class FessEsClient implements Client {
     public void open() {
         final FessConfig fessConfig = ComponentUtil.getFessConfig();
 
-        final String transportAddressesValue = System.getProperty(Constants.FESS_ES_TRANSPORT_ADDRESSES);
-        if (StringUtil.isNotBlank(transportAddressesValue)) {
-            for (final String transportAddressValue : transportAddressesValue.split(",")) {
-                final String[] addressPair = transportAddressValue.trim().split(":");
-                if (addressPair.length < 3) {
-                    final String host = addressPair[0];
-                    int port = 9300;
-                    if (addressPair.length == 2) {
-                        port = Integer.parseInt(addressPair[1]);
-                    }
-                    addTransportAddress(host, port);
-                } else {
-                    logger.warn("Invalid address format: " + transportAddressValue);
-                }
-            }
-        }
-
-        if (transportAddressList.isEmpty()) {
+        String httpAddress = System.getProperty(Constants.FESS_ES_HTTP_ADDRESS);
+        if (StringUtil.isBlank(httpAddress)) {
             if (runner == null) {
                 runner = new ElasticsearchClusterRunner();
-                final Configs config = newConfigs().clusterName(fessConfig.getElasticsearchClusterName()).numOfNode(1).useLogger();
+                final Configs config = newConfigs().clusterName(clusterName).numOfNode(1).useLogger();
                 final String esDir = System.getProperty("fess.es.dir");
                 if (esDir != null) {
                     config.basePath(esDir);
@@ -273,27 +252,14 @@ public class FessEsClient implements Client {
                 });
                 runner.build(config);
             }
-            final int port = runner.node().settings().getAsInt("transport.tcp.port", 9300);
-            client = createTransportClient(fessConfig, Lists.newArrayList(new TransportAddress(getInetAddressByName("localhost"), port)));
-            addTransportAddress("localhost", port);
+            final int port = runner.node().settings().getAsInt("http.port", 9200);
+            httpAddress = "http://localhost:" + port;
             logger.warn("Embedded Elasticsearch is running. This configuration is not recommended for production use.");
-        } else {
-            client = createTransportClient(fessConfig, transportAddressList);
         }
+        client = createHttpClient(fessConfig, httpAddress);
 
-        if (StringUtil.isBlank(transportAddressesValue)) {
-            final StringBuilder buf = new StringBuilder();
-            for (final TransportAddress transportAddress : transportAddressList) {
-                if (buf.length() > 0) {
-                    buf.append(',');
-                }
-                buf.append(transportAddress.address().getHostName());
-                buf.append(':');
-                buf.append(transportAddress.address().getPort());
-            }
-            if (buf.length() > 0) {
-                System.setProperty(Constants.FESS_ES_TRANSPORT_ADDRESSES, buf.toString());
-            }
+        if (StringUtil.isNotBlank(httpAddress)) {
+            System.setProperty(Constants.FESS_ES_HTTP_ADDRESS, httpAddress);
         }
 
         waitForYellowStatus(fessConfig);
@@ -352,18 +318,9 @@ public class FessEsClient implements Client {
         });
     }
 
-    protected Client createTransportClient(final FessConfig fessConfig, final List<TransportAddress> transportAddressList) {
-        final Builder settingsBuilder = Settings.builder();
-        settingsBuilder.put("cluster.name", fessConfig.getElasticsearchClusterName());
-        settingsBuilder.put("client.transport.sniff", fessConfig.isElasticsearchTransportSniff());
-        settingsBuilder.put("client.transport.ping_timeout", fessConfig.getElasticsearchTransportPingTimeout());
-        settingsBuilder.put("client.transport.nodes_sampler_interval", fessConfig.getElasticsearchTransportNodesSamplerInterval());
-        final Settings settings = settingsBuilder.build();
-        final TransportClient transportClient = new PreBuiltTransportClient(settings);
-        for (final TransportAddress address : transportAddressList) {
-            transportClient.addTransportAddress(address);
-        }
-        return transportClient;
+    protected Client createHttpClient(final FessConfig fessConfig, final String host) {
+        final Settings settings = Settings.builder().putList("http.hosts", host).build();
+        return new HttpClient(settings, null);
     }
 
     public boolean existsIndex(final String indexName) {
@@ -451,7 +408,7 @@ public class FessEsClient implements Client {
                 logger.warn(mappingFile + " is not found.", e);
             }
             try {
-                final PutMappingResponse putMappingResponse =
+                final AcknowledgedResponse putMappingResponse =
                         client.admin().indices().preparePutMapping(indexName).setType(docType).setSource(source, XContentType.JSON)
                                 .execute().actionGet(fessConfig.getIndexIndicesTimeout());
                 if (putMappingResponse.isAcknowledged()) {
@@ -491,7 +448,7 @@ public class FessEsClient implements Client {
         for (final String index : searchIndices) {
             builder.removeAlias(index, searchAlias);
         }
-        final IndicesAliasesResponse response = builder.execute().actionGet(fessConfig.getIndexIndicesTimeout());
+        final AcknowledgedResponse response = builder.execute().actionGet(fessConfig.getIndexIndicesTimeout());
         return response.isAcknowledged();
     }
 
@@ -509,7 +466,7 @@ public class FessEsClient implements Client {
                             if (source.trim().equals("{}")) {
                                 source = null;
                             }
-                            final IndicesAliasesResponse response =
+                            final AcknowledgedResponse response =
                                     client.admin().indices().prepareAliases().addAlias(createdIndexName, aliasName, source).execute()
                                             .actionGet(fessConfig.getIndexIndicesTimeout());
                             if (response.isAcknowledged()) {
@@ -631,9 +588,8 @@ public class FessEsClient implements Client {
             }
         }
         final String message =
-                "Elasticsearch (" + System.getProperty(Constants.FESS_ES_TRANSPORT_ADDRESSES)
-                        + ") is not available. Check the state of your Elasticsearch cluster (" + fessConfig.getElasticsearchClusterName()
-                        + ").";
+                "Elasticsearch (" + System.getProperty(Constants.FESS_ES_HTTP_ADDRESS)
+                        + ") is not available. Check the state of your Elasticsearch cluster (" + clusterName + ").";
         throw new ContainerInitFailureException(message, cause);
     }
 
@@ -948,18 +904,21 @@ public class FessEsClient implements Client {
         }
     }
 
-    public void addAll(final String index, final String type, final List<Map<String, Object>> docList) {
+    public void addAll(final String index, final String type, final List<Map<String, Object>> docList,
+            final BiConsumer<Map<String, Object>, IndexRequestBuilder> options) {
         final FessConfig fessConfig = ComponentUtil.getFessConfig();
         final BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
         for (final Map<String, Object> doc : docList) {
             final Object id = doc.remove(fessConfig.getIndexFieldId());
-            bulkRequestBuilder.add(client.prepareIndex(index, type, id.toString()).setSource(new DocMap(doc)));
+            final IndexRequestBuilder builder = client.prepareIndex(index, type, id.toString()).setSource(new DocMap(doc));
+            options.accept(doc, builder);
+            bulkRequestBuilder.add(builder);
         }
         final BulkResponse response = bulkRequestBuilder.execute().actionGet(ComponentUtil.getFessConfig().getIndexBulkTimeout());
         if (response.hasFailures()) {
             if (logger.isDebugEnabled()) {
                 @SuppressWarnings("rawtypes")
-                final List<DocWriteRequest> requests = bulkRequestBuilder.request().requests();
+                final List<DocWriteRequest<?>> requests = bulkRequestBuilder.request().requests();
                 final BulkItemResponse[] items = response.getItems();
                 if (requests.size() == items.length) {
                     for (int i = 0; i < requests.size(); i++) {
@@ -984,6 +943,7 @@ public class FessEsClient implements Client {
         private int size = Constants.DEFAULT_PAGE_SIZE;
         private GeoInfo geoInfo;
         private FacetInfo facetInfo;
+        private HighlightInfo highlightInfo;
         private String similarDocHash;
         private SearchRequestType searchRequestType = SearchRequestType.SEARCH;
         private boolean isScroll = false;
@@ -1002,8 +962,9 @@ public class FessEsClient implements Client {
             params.put("responseFields", responseFields);
             params.put("offset", offset);
             params.put("size", size);
-            //            params.put("geoInfo", geoInfo);
-            //            params.put("facetInfo", facetInfo);
+            // TODO support rescorer(convert to map)
+            // params.put("geoInfo", geoInfo);
+            // params.put("facetInfo", facetInfo);
             params.put("similarDocHash", similarDocHash);
             return params;
         }
@@ -1035,6 +996,11 @@ public class FessEsClient implements Client {
 
         public SearchConditionBuilder geoInfo(final GeoInfo geoInfo) {
             this.geoInfo = geoInfo;
+            return this;
+        }
+
+        public SearchConditionBuilder highlightInfo(final HighlightInfo highlightInfo) {
+            this.highlightInfo = highlightInfo;
             return this;
         }
 
@@ -1099,11 +1065,13 @@ public class FessEsClient implements Client {
             queryContext.sortBuilders().forEach(sortBuilder -> searchRequestBuilder.addSort(sortBuilder));
 
             // highlighting
-            final HighlightBuilder highlightBuilder = new HighlightBuilder();
-            queryHelper.highlightedFields(stream -> stream.forEach(hf -> highlightBuilder.field(new HighlightBuilder.Field(hf)
-                    .highlighterType(fessConfig.getQueryHighlightType()).fragmentSize(fessConfig.getQueryHighlightFragmentSizeAsInteger())
-                    .numOfFragments(fessConfig.getQueryHighlightNumberOfFragmentsAsInteger()))));
-            searchRequestBuilder.highlighter(highlightBuilder);
+            if (highlightInfo != null) {
+                final HighlightBuilder highlightBuilder = new HighlightBuilder();
+                queryHelper.highlightedFields(stream -> stream.forEach(hf -> highlightBuilder.field(new HighlightBuilder.Field(hf)
+                        .highlighterType(highlightInfo.getType()).fragmentSize(highlightInfo.getFragmentSize())
+                        .numOfFragments(highlightInfo.getNumOfFragments()))));
+                searchRequestBuilder.highlighter(highlightBuilder);
+            }
 
             // facets
             if (facetInfo != null) {
@@ -1218,6 +1186,10 @@ public class FessEsClient implements Client {
 
     public interface EntityCreator<T, R, H> {
         T build(R response, H hit);
+    }
+
+    public void setClusterName(final String clusterName) {
+        this.clusterName = clusterName;
     }
 
     //
@@ -1532,8 +1504,8 @@ public class FessEsClient implements Client {
     }
 
     @Override
-    public FieldCapabilitiesRequestBuilder prepareFieldCaps() {
-        return client.prepareFieldCaps();
+    public FieldCapabilitiesRequestBuilder prepareFieldCaps(final String... indices) {
+        return client.prepareFieldCaps(indices);
     }
 
     @Override
@@ -1546,4 +1518,8 @@ public class FessEsClient implements Client {
         client.fieldCaps(request, listener);
     }
 
+    @Override
+    public BulkRequestBuilder prepareBulk(String globalIndex, String globalType) {
+        return client.prepareBulk(globalIndex, globalType);
+    }
 }

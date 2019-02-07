@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,6 +165,23 @@ public class FessPropTest extends UnitFessTestCase {
 
         assertTrue(matchesTag(tags[4], "<div x-y=\"a-.:_0\"></div>"));
         assertFalse(matchesTag(tags[4], "<div x-y=\"a 0\"></div>"));
+    }
+
+    public void test_getAvailableSmbSidType() throws Exception {
+        FessProp.propMap.clear();
+        FessConfig fessConfig = new FessConfig.SimpleImpl() {
+            @Override
+            public String getSmbAvailableSidTypes() {
+                return "1,2,5:2";
+            }
+        };
+
+        assertNull(fessConfig.getAvailableSmbSidType(0));
+        assertEquals(1, fessConfig.getAvailableSmbSidType(1));
+        assertEquals(2, fessConfig.getAvailableSmbSidType(2));
+        assertNull(fessConfig.getAvailableSmbSidType(3));
+        assertNull(fessConfig.getAvailableSmbSidType(4));
+        assertEquals(2, fessConfig.getAvailableSmbSidType(5));
     }
 
     private boolean matchesTag(final PrunedTag tag, final String text) throws Exception {

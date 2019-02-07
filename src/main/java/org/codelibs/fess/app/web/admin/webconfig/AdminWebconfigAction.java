@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -321,6 +321,7 @@ public class AdminWebconfigAction extends FessAdminAction {
     }
 
     protected void registerRolesAndLabels(final RenderData data) {
+        RenderDataUtil.register(data, "labelSettingEnabled", fessConfig.isFormAdminLabelInConfigEnabled());
         RenderDataUtil.register(data, "roleTypeItems", roleTypeService.getRoleTypeList());
         RenderDataUtil.register(data, "labelTypeItems", labelTypeService.getLabelTypeList());
     }

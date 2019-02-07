@@ -45,6 +45,9 @@ set JAVA_OPTS=%JAVA_OPTS% -XX:MaxDirectMemorySize=%FESS_DIRECT_SIZE%
 REM set to headless, just in case
 set JAVA_OPTS=%JAVA_OPTS% -Djava.awt.headless=true
 
+REM maximum # keep-alive connections to maintain at once
+set JAVA_OPTS=%JAVA_OPTS% -Dhttp.maxConnections=20
+
 REM Force the JVM to use IPv4 stack
 if NOT "%FESS_USE_IPV4%" == "" (
 set JAVA_OPTS=%JAVA_OPTS% -Djava.net.preferIPv4Stack=true
@@ -117,5 +120,4 @@ set FESS_JAVA_OPTS=%FESS_JAVA_OPTS% -Dtomcat.config.path=tomcat_config.propertie
 
 REM External elasticsearch cluster
 REM set FESS_JAVA_OPTS=%FESS_JAVA_OPTS% -Dfess.es.http_address=http://localhost:9200
-REM set FESS_JAVA_OPTS=%FESS_JAVA_OPTS% -Dfess.es.transport_addresses=localhost:9300
 REM set FESS_JAVA_OPTS=%FESS_JAVA_OPTS% -Dfess.dictionary.path=%ES_HOME%/config/

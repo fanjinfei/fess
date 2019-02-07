@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -241,6 +241,9 @@ public class FessLabels extends UserMessages {
 
     /** The key of the message: Purge By Bots */
     public static final String LABELS_PURGE_BY_BOTS = "{labels.purgeByBots}";
+
+    /** The key of the message: Log Level */
+    public static final String LABELS_LOG_LEVEL = "{labels.logLevel}";
 
     /** The key of the message: Purge Search Log */
     public static final String LABELS_PURGE_SEARCH_LOG_DAY = "{labels.purgeSearchLogDay}";
@@ -605,7 +608,7 @@ public class FessLabels extends UserMessages {
     /** The key of the message: MENU */
     public static final String LABELS_SIDEBAR_MENU = "{labels.sidebar.menu}";
 
-    /** The key of the message: &copy;2018 &lt;a href="https://github.com/codelibs"&gt;CodeLibs Project&lt;/a&gt;. */
+    /** The key of the message: &copy;2019 &lt;a href="https://github.com/codelibs"&gt;CodeLibs Project&lt;/a&gt;. */
     public static final String LABELS_FOOTER_COPYRIGHT = "{labels.footer.copyright}";
 
     /** The key of the message: Search */
@@ -1207,6 +1210,9 @@ public class FessLabels extends UserMessages {
 
     /** The key of the message: Bots Name For Purge */
     public static final String LABELS_purge_by_bots = "{labels.purge_by_bots}";
+
+    /** The key of the message: Log Level */
+    public static final String LABELS_log_level = "{labels.log_level}";
 
     /** The key of the message: Encoding for CSV */
     public static final String LABELS_csv_file_encoding = "{labels.csv_file_encoding}";
@@ -2835,11 +2841,53 @@ public class FessLabels extends UserMessages {
     /** The key of the message: Favorite Log */
     public static final String LABELS_searchlog_log_type_favorite = "{labels.searchlog_log_type_favorite}";
 
+    /** The key of the message: User Information */
+    public static final String LABELS_searchlog_log_type_user_info = "{labels.searchlog_log_type_user_info}";
+
+    /** The key of the message: Keywords */
+    public static final String LABELS_searchlog_log_type_search_keyword = "{labels.searchlog_log_type_search_keyword}";
+
+    /** The key of the message: Zero Hits */
+    public static final String LABELS_searchlog_log_type_search_zerohit = "{labels.searchlog_log_type_search_zerohit}";
+
+    /** The key of the message: Zero Clicks */
+    public static final String LABELS_searchlog_log_type_search_zeroclick = "{labels.searchlog_log_type_search_zeroclick}";
+
+    /** The key of the message: Keyword by Hour */
+    public static final String LABELS_searchlog_log_type_search_count_hour = "{labels.searchlog_log_type_search_count_hour}";
+
+    /** The key of the message: Keyword by Day */
+    public static final String LABELS_searchlog_log_type_search_count_day = "{labels.searchlog_log_type_search_count_day}";
+
+    /** The key of the message: User by Hour */
+    public static final String LABELS_searchlog_log_type_search_user_hour = "{labels.searchlog_log_type_search_user_hour}";
+
+    /** The key of the message: User by Day */
+    public static final String LABELS_searchlog_log_type_search_user_day = "{labels.searchlog_log_type_search_user_day}";
+
+    /** The key of the message: Request Time Avg. by Hour */
+    public static final String LABELS_searchlog_log_type_search_reqtimeavg_hour = "{labels.searchlog_log_type_search_reqtimeavg_hour}";
+
+    /** The key of the message: Request Time Avg. by Day */
+    public static final String LABELS_searchlog_log_type_search_reqtimeavg_day = "{labels.searchlog_log_type_search_reqtimeavg_day}";
+
+    /** The key of the message: Click Count */
+    public static final String LABELS_searchlog_log_type_click_count = "{labels.searchlog_log_type_click_count}";
+
+    /** The key of the message: Favorite Count */
+    public static final String LABELS_searchlog_log_type_favorite_count = "{labels.searchlog_log_type_favorite_count}";
+
     /** The key of the message: Message */
     public static final String LABELS_searchlog_log_message = "{labels.searchlog_log_message}";
 
     /** The key of the message: Time */
     public static final String LABELS_searchlog_requested_time = "{labels.searchlog_requested_time}";
+
+    /** The key of the message: Value */
+    public static final String LABELS_searchlog_value = "{labels.searchlog_value}";
+
+    /** The key of the message: Count */
+    public static final String LABELS_searchlog_count = "{labels.searchlog_count}";
 
     /** The key of the message: Log Details */
     public static final String LABELS_searchlog_configuration_details = "{labels.searchlog_configuration_details}";
@@ -2855,6 +2903,9 @@ public class FessLabels extends UserMessages {
 
     /** The key of the message: Delete */
     public static final String LABELS_searchlog_configuration_button_delete = "{labels.searchlog_configuration_button_delete}";
+
+    /** The key of the message: Size */
+    public static final String LABELS_searchlog_size = "{labels.searchlog_size}";
 
     /** The key of the message: Query ID */
     public static final String LABELS_searchlog_queryid = "{labels.searchlog_queryid}";

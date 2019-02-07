@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.codelibs.fess.app.service.FavoriteLogService;
 import org.codelibs.fess.app.service.SearchService;
 import org.codelibs.fess.entity.FacetInfo;
 import org.codelibs.fess.entity.GeoInfo;
+import org.codelibs.fess.entity.HighlightInfo;
 import org.codelibs.fess.entity.PingResponse;
 import org.codelibs.fess.entity.SearchRenderData;
 import org.codelibs.fess.entity.SearchRequestParams;
@@ -55,11 +56,11 @@ import org.codelibs.fess.helper.UserInfoHelper;
 import org.codelibs.fess.mylasta.direction.FessConfig;
 import org.codelibs.fess.util.ComponentUtil;
 import org.codelibs.fess.util.DocumentUtil;
+import org.codelibs.fess.util.EsUtil;
 import org.codelibs.fess.util.FacetResponse;
 import org.codelibs.fess.util.FacetResponse.Field;
 import org.dbflute.optional.OptionalThing;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -381,8 +382,7 @@ public class JsonApiManager extends BaseJsonApiManager {
     }
 
     protected String toGeoRequestString(final GeoInfo geoInfo) {
-        try (OutputStream out =
-                geoInfo.toQueryBuilder().toXContent(XContentFactory.jsonBuilder(), ToXContent.EMPTY_PARAMS).getOutputStream()) {
+        try (OutputStream out = EsUtil.getXContentOutputStream(geoInfo.toQueryBuilder(), XContentType.JSON)) {
             return ((ByteArrayOutputStream) out).toString(Constants.UTF_8);
         } catch (final Exception e) {
             return "{\"error\":\"" + detailedMessage(e) + "\"}";
@@ -675,7 +675,7 @@ public class JsonApiManager extends BaseJsonApiManager {
 
     }
 
-    protected static class JsonRequestParams implements SearchRequestParams {
+    protected static class JsonRequestParams extends SearchRequestParams {
 
         private final HttpServletRequest request;
 
@@ -807,5 +807,9 @@ public class JsonApiManager extends BaseJsonApiManager {
             return request.getParameter("sdh");
         }
 
+        @Override
+        public HighlightInfo getHighlightInfo() {
+            return ComponentUtil.getViewHelper().createHighlightInfo();
+        }
     }
 }

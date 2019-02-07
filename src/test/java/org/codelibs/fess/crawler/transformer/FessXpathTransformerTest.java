@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import org.codelibs.fess.crawler.entity.ResponseData;
 import org.codelibs.fess.crawler.entity.ResultData;
 import org.codelibs.fess.crawler.exception.ChildUrlsException;
 import org.codelibs.fess.es.config.exentity.CrawlingConfig.ConfigName;
-import org.codelibs.fess.es.config.exentity.LabelType;
 import org.codelibs.fess.es.config.exentity.WebConfig;
 import org.codelibs.fess.helper.CrawlingConfigHelper;
 import org.codelibs.fess.helper.CrawlingInfoHelper;
@@ -81,7 +80,6 @@ public class FessXpathTransformerTest extends UnitFessTestCase {
         SingletonLaContainerFactory.getContainer().register(LabelTypeHelper.class, "labelTypeHelper");
 
         WebConfig webConfig = new WebConfig();
-        setValueToObject(webConfig, "labelTypeList", new ArrayList<LabelType>());
         ComponentUtil.getCrawlingConfigHelper().store("test", webConfig);
         setValueToObject(ComponentUtil.getLabelTypeHelper(), "labelTypePatternList", new ArrayList<LabelTypePattern>());
 

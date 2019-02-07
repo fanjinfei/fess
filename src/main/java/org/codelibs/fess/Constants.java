@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,6 +259,8 @@ public class Constants extends CoreLibConstants {
 
     public static final String SEARCH_LOG_ACCESS_TYPE_WEB = "web";
 
+    public static final String SEARCH_LOG_ACCESS_TYPE_ADMIN = "admin";
+
     public static final String SEARCH_LOG_ACCESS_TYPE_OTHER = "other";
 
     public static final String RESULTS_PER_PAGE = "resultsPerPage";
@@ -317,9 +319,7 @@ public class Constants extends CoreLibConstants {
 
     public static final String MATCHES_ALL_QUERY = "*:*";
 
-    public static final String FESS_ES_TRANSPORT_ADDRESSES = "fess.es.transport_addresses";
-
-    public static final String FESS_ES_CLUSTER_NAME = "fess.es.cluster_name";
+    public static final String FESS_ES_HTTP_ADDRESS = "fess.es.http_address";
 
     public static final int DEFAULT_PAGE_SIZE = 20;
 
@@ -398,6 +398,8 @@ public class Constants extends CoreLibConstants {
 
     public static final String MAPPING_TYPE_DOUBLE = "double";
 
+    public static final String MAPPING_TYPE_DATE = "date";
+
     public static final String PAGING_QUERY_LIST = "pagingQueryList";
 
     public static final String REQUEST_LANGUAGES = "requestLanguages";
@@ -427,4 +429,6 @@ public class Constants extends CoreLibConstants {
     public static final String FESS_THUMBNAIL_PATH = "fess.thumbnail.path";
 
     public static final String FESS_VAR_PATH = "fess.var.path";
+
+    public static final String FESS_LOG_LEVEL = "fess.log.level";
 }

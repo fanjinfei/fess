@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,13 @@ import org.codelibs.fess.app.service.ScheduledJobService;
 import org.codelibs.fess.app.web.base.FessAdminAction;
 import org.codelibs.fess.es.client.FessEsClient;
 import org.codelibs.fess.es.config.exbhv.DataConfigBhv;
-import org.codelibs.fess.es.config.exbhv.DataConfigToRoleBhv;
 import org.codelibs.fess.es.config.exbhv.ElevateWordBhv;
 import org.codelibs.fess.es.config.exbhv.FileConfigBhv;
-import org.codelibs.fess.es.config.exbhv.FileConfigToRoleBhv;
-import org.codelibs.fess.es.config.exbhv.LabelToRoleBhv;
 import org.codelibs.fess.es.config.exbhv.LabelTypeBhv;
 import org.codelibs.fess.es.config.exbhv.RoleTypeBhv;
 import org.codelibs.fess.es.config.exbhv.WebConfigBhv;
-import org.codelibs.fess.es.config.exbhv.WebConfigToRoleBhv;
 import org.codelibs.fess.es.user.exbhv.RoleBhv;
+import org.codelibs.fess.util.ComponentUtil;
 import org.codelibs.fess.util.UpgradeUtil;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.lastaflute.web.Execute;
@@ -50,6 +47,10 @@ public class AdminUpgradeAction extends FessAdminAction {
 
     private static final String VERSION_12_1 = "12.1";
 
+    private static final String VERSION_12_2 = "12.2";
+
+    private static final String VERSION_12_3 = "12.3";
+
     // ===================================================================================
     //                                                                           Attribute
     //
@@ -60,25 +61,13 @@ public class AdminUpgradeAction extends FessAdminAction {
     protected RoleTypeBhv roleTypeBhv;
 
     @Resource
-    protected LabelToRoleBhv labelToRoleBhv;
-
-    @Resource
     protected LabelTypeBhv labelTypeBhv;
-
-    @Resource
-    protected WebConfigToRoleBhv webConfigToRoleBhv;
 
     @Resource
     protected WebConfigBhv webConfigBhv;
 
     @Resource
-    protected FileConfigToRoleBhv fileConfigToRoleBhv;
-
-    @Resource
     protected FileConfigBhv fileConfigBhv;
-
-    @Resource
-    protected DataConfigToRoleBhv dataConfigToRoleBhv;
 
     @Resource
     protected DataConfigBhv dataConfigBhv;
@@ -124,6 +113,8 @@ public class AdminUpgradeAction extends FessAdminAction {
             try {
                 upgradeFrom12_0();
                 upgradeFrom12_1();
+                upgradeFrom12_2();
+                upgradeFrom12_3();
                 upgradeFromAll();
 
                 saveInfo(messages -> messages.addSuccessStartedDataUpdate(GLOBAL));
@@ -136,6 +127,8 @@ public class AdminUpgradeAction extends FessAdminAction {
         } else if (VERSION_12_1.equals(form.targetVersion)) {
             try {
                 upgradeFrom12_1();
+                upgradeFrom12_2();
+                upgradeFrom12_3();
                 upgradeFromAll();
 
                 saveInfo(messages -> messages.addSuccessStartedDataUpdate(GLOBAL));
@@ -144,6 +137,31 @@ public class AdminUpgradeAction extends FessAdminAction {
             } catch (final Exception e) {
                 logger.warn("Failed to upgrade data.", e);
                 saveError(messages -> messages.addErrorsFailedToUpgradeFrom(GLOBAL, VERSION_12_1, e.getLocalizedMessage()));
+            }
+        } else if (VERSION_12_2.equals(form.targetVersion)) {
+            try {
+                upgradeFrom12_2();
+                upgradeFrom12_3();
+                upgradeFromAll();
+
+                saveInfo(messages -> messages.addSuccessStartedDataUpdate(GLOBAL));
+
+                systemHelper.reloadConfiguration();
+            } catch (final Exception e) {
+                logger.warn("Failed to upgrade data.", e);
+                saveError(messages -> messages.addErrorsFailedToUpgradeFrom(GLOBAL, VERSION_12_2, e.getLocalizedMessage()));
+            }
+        } else if (VERSION_12_3.equals(form.targetVersion)) {
+            try {
+                upgradeFrom12_3();
+                upgradeFromAll();
+
+                saveInfo(messages -> messages.addSuccessStartedDataUpdate(GLOBAL));
+
+                systemHelper.reloadConfiguration();
+            } catch (final Exception e) {
+                logger.warn("Failed to upgrade data.", e);
+                saveError(messages -> messages.addErrorsFailedToUpgradeFrom(GLOBAL, VERSION_12_2, e.getLocalizedMessage()));
             }
         } else {
             saveError(messages -> messages.addErrorsUnknownVersionForUpgrade(GLOBAL));
@@ -163,6 +181,14 @@ public class AdminUpgradeAction extends FessAdminAction {
                 + "]}");
         UpgradeUtil.addFieldMapping(indicesClient, "fess_log.click_log", "click_log", "urlId",
                 "{\"properties\":{\"urlId\":{\"type\":\"keyword\"}}}");
+    }
+
+    private void upgradeFrom12_2() {
+        // nothing
+    }
+
+    private void upgradeFrom12_3() {
+        ComponentUtil.getThumbnailManager().migrate();
     }
 
     private void upgradeFromAll() {

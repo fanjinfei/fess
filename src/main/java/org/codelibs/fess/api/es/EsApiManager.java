@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.codelibs.core.io.CopyUtil;
 import org.codelibs.core.lang.StringUtil;
 import org.codelibs.curl.Curl.Method;
 import org.codelibs.curl.CurlRequest;
+import org.codelibs.curl.CurlResponse;
 import org.codelibs.fess.Constants;
 import org.codelibs.fess.api.BaseApiManager;
 import org.codelibs.fess.exception.FessSystemException;
@@ -70,16 +71,18 @@ public class EsApiManager extends BaseApiManager {
     @Override
     public boolean matches(final HttpServletRequest request) {
         final String servletPath = request.getServletPath();
-        if (servletPath.startsWith(pathPrefix)) {
-            final RequestManager requestManager = ComponentUtil.getRequestManager();
-            return requestManager.findUserBean(FessUserBean.class).map(user -> user.hasRoles(acceptedRoles)).orElse(Boolean.FALSE);
-        }
-        return false;
+        return servletPath.startsWith(pathPrefix);
     }
 
     @Override
     public void process(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain) throws IOException,
             ServletException {
+        final RequestManager requestManager = ComponentUtil.getRequestManager();
+        if (!requestManager.findUserBean(FessUserBean.class).map(user -> user.hasRoles(acceptedRoles)).orElse(Boolean.FALSE)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized access: " + request.getServletPath());
+            return;
+        }
+
         try {
             getSessionManager().getAttribute(Constants.ES_API_ACCESS_TOKEN, String.class).ifPresent(token -> {
                 final String servletPath = request.getServletPath();
@@ -136,7 +139,7 @@ public class EsApiManager extends BaseApiManager {
                 curlRequest.param(entry.getKey(), entry.getValue()[0]);
             }
         });
-        curlRequest.onConnect((req, con) -> {
+        try (final CurlResponse curlResponse = curlRequest.onConnect((req, con) -> {
             con.setDoOutput(true);
             if (httpMethod != Method.GET) {
                 try (ServletInputStream in = request.getInputStream(); OutputStream out = con.getOutputStream()) {
@@ -145,27 +148,21 @@ public class EsApiManager extends BaseApiManager {
                     throw new WebApiException(HttpServletResponse.SC_BAD_REQUEST, e);
                 }
             }
-        }).execute(con -> {
-            try (ServletOutputStream out = response.getOutputStream()) {
-                try (InputStream in = con.getInputStream()) {
-                    response.setStatus(con.getResponseCode());
-                    CopyUtil.copy(in, out);
-                } catch (final Exception e) {
-                    response.setStatus(con.getResponseCode());
-                    try (InputStream err = con.getErrorStream()) {
-                        CopyUtil.copy(err, out);
-                    }
-                }
+        }).execute()) {
+
+            try (ServletOutputStream out = response.getOutputStream(); InputStream in = curlResponse.getContentAsStream()) {
+                response.setStatus(curlResponse.getHttpStatusCode());
+                CopyUtil.copy(in, out);
             } catch (final ClientAbortException e) {
                 logger.debug("Client aborts this request.", e);
-            } catch (final Exception e) {
-                if (e.getCause() instanceof ClientAbortException) {
-                    logger.debug("Client aborts this request.", e);
-                } else {
-                    throw new WebApiException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
-                }
             }
-        });
+        } catch (final Exception e) {
+            if (e.getCause() instanceof ClientAbortException) {
+                logger.debug("Client aborts this request.", e);
+            } else {
+                throw new WebApiException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
+            }
+        }
     }
 
     protected void processPluginRequest(final HttpServletRequest request, final HttpServletResponse response, final String path) {

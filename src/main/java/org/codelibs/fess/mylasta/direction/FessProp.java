@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import org.codelibs.core.exception.ClassNotFoundRuntimeException;
 import org.codelibs.core.lang.StringUtil;
 import org.codelibs.core.misc.Pair;
 import org.codelibs.core.misc.Tuple3;
+import org.codelibs.core.misc.Tuple4;
 import org.codelibs.fess.Constants;
 import org.codelibs.fess.exception.FessSystemException;
 import org.codelibs.fess.helper.PermissionHelper;
@@ -68,6 +69,8 @@ import org.lastaflute.web.validation.theme.typed.IntegerTypeValidator;
 import org.lastaflute.web.validation.theme.typed.LongTypeValidator;
 
 public interface FessProp {
+
+    String SMB_AVAILABLE_SID_TYPES = "smbAvailableSidTypes";
 
     String LOGGING_SEARCH_DOCS_FIELDS = "loggingSearchDocsFields";
 
@@ -679,6 +682,12 @@ public interface FessProp {
         return getJvmSuggestOptions().split("\n");
     }
 
+    String getJvmThumbnailOptions();
+
+    default String[] getJvmThumbnailOptionsAsArray() {
+        return getJvmThumbnailOptions().split("\n");
+    }
+
     String getCrawlerDocumentHtmlPrunedTags();
 
     default PrunedTag[] getCrawlerDocumentHtmlPrunedTagsAsArray() {
@@ -775,12 +784,25 @@ public interface FessProp {
 
     String getSmbAvailableSidTypes();
 
-    default boolean isAvailableSmbSidType(final int sidType) {
-        if (StringUtil.isBlank(getSmbAvailableSidTypes())) {
-            return false;
+    default Integer getAvailableSmbSidType(final int sidType) {
+        @SuppressWarnings("unchecked")
+        Map<Integer, Integer> params = (Map<Integer, Integer>) propMap.get(SMB_AVAILABLE_SID_TYPES);
+        if (params == null) {
+            params = split(getSmbAvailableSidTypes(), ",").get(stream -> stream.map(s -> {
+                final String[] v = s.split(":");
+                if (v.length == 1) {
+                    final int x = Integer.parseInt(v[0].trim());
+                    return new Pair<>(x, x);
+                } else if (v.length == 2) {
+                    final int x = Integer.parseInt(v[0].trim());
+                    final int y = Integer.parseInt(v[1].trim());
+                    return new Pair<>(x, y);
+                }
+                return null;
+            }).filter(v -> v != null).collect(Collectors.toMap(e -> e.getFirst(), e -> e.getSecond())));
+            propMap.put(SMB_AVAILABLE_SID_TYPES, params);
         }
-        final String value = Integer.toString(sidType);
-        return split(getSmbAvailableSidTypes(), ",").get(stream -> stream.anyMatch(s -> s.equals(value)));
+        return params.get(sidType);
     }
 
     String getSupportedLanguages();
@@ -869,22 +891,25 @@ public interface FessProp {
 
     String getCrawlerMetadataNameMapping();
 
-    default Pair<String, String> getCrawlerMetadataNameMapping(final String name) {
+    default Tuple3<String, String, String> getCrawlerMetadataNameMapping(final String name) {
         @SuppressWarnings("unchecked")
-        Map<String, Pair<String, String>> params = (Map<String, Pair<String, String>>) propMap.get(CRAWLER_METADATA_NAME_MAPPING);
+        Map<String, Tuple3<String, String, String>> params =
+                (Map<String, Tuple3<String, String, String>>) propMap.get(CRAWLER_METADATA_NAME_MAPPING);
         if (params == null) {
             params = split(getCrawlerMetadataNameMapping(), "\n").get(stream -> stream.filter(StringUtil::isNotBlank).map(v -> {
                 final String[] values = v.split("=");
                 if (values.length == 2) {
-                    final String[] subValues = values[1].split(":");
-                    if (subValues.length == 2) {
-                        return new Tuple3<>(values[0], subValues[0], subValues[1]);
+                    final String[] subValues = values[1].split(":", 3);
+                    if (subValues.length == 3) {
+                        return new Tuple4<>(values[0], subValues[0], subValues[1], subValues[2]);
+                    } else if (subValues.length == 2) {
+                        return new Tuple4<>(values[0], subValues[0], subValues[1], StringUtil.EMPTY);
                     } else {
-                        return new Tuple3<>(values[0], values[1], Constants.MAPPING_TYPE_ARRAY);
+                        return new Tuple4<>(values[0], values[1], Constants.MAPPING_TYPE_ARRAY, StringUtil.EMPTY);
                     }
                 }
                 return null;
-            }).collect(Collectors.toMap(Tuple3::getValue1, d -> new Pair<>(d.getValue2(), d.getValue3()))));
+            }).collect(Collectors.toMap(Tuple4::getValue1, d -> new Tuple3<>(d.getValue2(), d.getValue3(), d.getValue4()))));
             propMap.put(CRAWLER_METADATA_NAME_MAPPING, params);
         }
         return params.get(name);
@@ -1867,5 +1892,24 @@ public interface FessProp {
             propMap.put(LOGGING_SEARCH_DOCS_FIELDS, fields);
         }
         return fields;
+    }
+
+    String getSchedulerTargetName();
+
+    default boolean isSchedulerTarget(final String target) {
+        if (StringUtil.isBlank(target)) {
+            return true;
+        }
+
+        final String myName = getSchedulerTargetName();
+
+        final String[] targets = target.split(",");
+        for (String name : targets) {
+            name = name.trim();
+            if (Constants.DEFAULT_JOB_TARGET.equalsIgnoreCase(name) || StringUtil.isNotBlank(myName) && myName.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

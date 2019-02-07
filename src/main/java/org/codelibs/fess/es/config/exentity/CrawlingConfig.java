@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,6 @@ public interface CrawlingConfig {
 
     String[] getVirtualHosts();
 
-    String[] getLabelTypeValues();
-
     String getDocumentBoost();
 
     String getIndexingTarget(String input);
@@ -67,7 +65,7 @@ public interface CrawlingConfig {
     public enum ConfigType {
         WEB("W"), FILE("F"), DATA("D");
 
-        private String typePrefix;
+        private final String typePrefix;
 
         ConfigType(final String typePrefix) {
             this.typePrefix = typePrefix;

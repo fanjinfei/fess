@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,9 +68,14 @@ public class IndexingHelper {
                             }
                         });
             }
+            final CrawlingConfigHelper crawlingConfigHelper = ComponentUtil.getCrawlingConfigHelper();
             synchronized (fessEsClient) {
                 deleteOldDocuments(fessEsClient, docList);
-                fessEsClient.addAll(fessConfig.getIndexDocumentUpdateIndex(), fessConfig.getIndexDocumentType(), docList);
+                fessEsClient.addAll(fessConfig.getIndexDocumentUpdateIndex(), fessConfig.getIndexDocumentType(), docList,
+                        (doc, builder) -> {
+                            final String configId = (String) doc.get(fessConfig.getIndexFieldConfigId());
+                            crawlingConfigHelper.getPipeline(configId).ifPresent(s -> builder.setPipeline(s));
+                        });
             }
             if (logger.isInfoEnabled()) {
                 if (docList.getContentSize() > 0) {

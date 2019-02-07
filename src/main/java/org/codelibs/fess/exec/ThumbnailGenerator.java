@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package org.codelibs.fess.exec;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.Resource;
 
@@ -110,13 +111,9 @@ public class ThumbnailGenerator {
             }
         }
 
-        final String transportAddresses = System.getProperty(Constants.FESS_ES_TRANSPORT_ADDRESSES);
-        if (StringUtil.isNotBlank(transportAddresses)) {
-            System.setProperty(EsClient.TRANSPORT_ADDRESSES, transportAddresses);
-        }
-        final String clusterName = System.getProperty(Constants.FESS_ES_CLUSTER_NAME);
-        if (StringUtil.isNotBlank(clusterName)) {
-            System.setProperty(EsClient.CLUSTER_NAME, clusterName);
+        final String httpAddress = System.getProperty(Constants.FESS_ES_HTTP_ADDRESS);
+        if (StringUtil.isNotBlank(httpAddress)) {
+            System.setProperty(EsClient.HTTP_ADDRESS, httpAddress);
         }
 
         TimeoutTask systemMonitorTask = null;
@@ -195,10 +192,14 @@ public class ThumbnailGenerator {
 
         int totalCount = 0;
         int count = 1;
-        final ForkJoinPool pool = new ForkJoinPool(options.numOfThreads);
-        while (count != 0) {
-            count = ComponentUtil.getThumbnailManager().generate(pool, options.cleanup);
-            totalCount += count;
+        final ExecutorService executorService = Executors.newFixedThreadPool(options.numOfThreads);
+        try {
+            while (count != 0) {
+                count = ComponentUtil.getThumbnailManager().generate(executorService, options.cleanup);
+                totalCount += count;
+            }
+        } finally {
+            executorService.shutdown();
         }
         return totalCount;
     }

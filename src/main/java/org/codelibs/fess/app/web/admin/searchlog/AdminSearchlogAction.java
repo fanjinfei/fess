@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ import org.lastaflute.web.ruts.process.ActionRuntime;
  */
 public class AdminSearchlogAction extends FessAdminAction {
 
-    private static final String[] CONDITION_FIELDS = new String[] { "logType", "queryId", "userSessionId", "requestedTimeRange" };
+    private static final String[] CONDITION_FIELDS =
+            new String[] { "logType", "queryId", "userSessionId", "requestedTimeRange", "pageSize" };
 
     // ===================================================================================
     //                                                                           Attribute
@@ -73,7 +74,9 @@ public class AdminSearchlogAction extends FessAdminAction {
     @Execute
     public HtmlResponse search(final SearchForm form) {
         saveToken();
+        searchLogPager.clear();
         copyBeanToBean(form, searchLogPager, op -> op.exclude(Constants.PAGER_CONVERSION_RULE));
+        searchLogPager.setPageSize(form.getPageSize());
         return asHtml(path_AdminSearchlog_AdminSearchlogJsp).renderWith(data -> {
             searchPaging(data, form);
         });

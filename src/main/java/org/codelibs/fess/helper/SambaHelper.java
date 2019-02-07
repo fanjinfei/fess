@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,14 @@ import javax.annotation.PostConstruct;
 
 import org.codelibs.fess.mylasta.direction.FessConfig;
 import org.codelibs.fess.util.ComponentUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jcifs.SID;
 
 public class SambaHelper {
+
+    private static final Logger logger = LoggerFactory.getLogger(SambaHelper.class);
 
     public static final int SID_TYPE_ALIAS = 4;
 
@@ -50,8 +54,19 @@ public class SambaHelper {
     }
 
     public String getAccountId(final SID sid) {
-        if (fessConfig.isAvailableSmbSidType(sid.getType())) {
-            return createSearchRole(sid.getType(), sid.getAccountName());
+        final int type = sid.getType();
+        if (logger.isDebugEnabled()) {
+            try {
+                logger.debug("Processing SID: {} {} {}", type, sid, sid.toDisplayString());
+            } catch (final Exception e) {
+                // ignore
+            }
+        }
+        final Integer id = fessConfig.getAvailableSmbSidType(type);
+        if (id != null) {
+            return createSearchRole(id, sid.getAccountName());
+        } else if (logger.isDebugEnabled()) {
+            logger.debug("Ignored SID: {} {}", type, sid);
         }
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -218,8 +218,21 @@ public class ViewHelperTest extends UnitFessTestCase {
     public void test_escapeHighlight() {
         ViewHelper viewHelper = new ViewHelper();
         viewHelper.init();
+        String text;
 
-        String text = "";
+        text = "111 222" + viewHelper.originalHighlightTagPre + "aaa" + viewHelper.originalHighlightTagPost;
+        assertEquals("111 222" + viewHelper.highlightTagPre + "aaa" + viewHelper.highlightTagPost, viewHelper.escapeHighlight(text));
+
+        text = "111.222" + viewHelper.originalHighlightTagPre + "aaa" + viewHelper.originalHighlightTagPost;
+        assertEquals("222" + viewHelper.highlightTagPre + "aaa" + viewHelper.highlightTagPost, viewHelper.escapeHighlight(text));
+
+        text = "111\n222" + viewHelper.originalHighlightTagPre + "aaa" + viewHelper.originalHighlightTagPost;
+        assertEquals("222" + viewHelper.highlightTagPre + "aaa" + viewHelper.highlightTagPost, viewHelper.escapeHighlight(text));
+
+        text = "あああ。いいい" + viewHelper.originalHighlightTagPre + "aaa" + viewHelper.originalHighlightTagPost;
+        assertEquals("いいい" + viewHelper.highlightTagPre + "aaa" + viewHelper.highlightTagPost, viewHelper.escapeHighlight(text));
+
+        text = "";
         assertEquals("", viewHelper.escapeHighlight(text));
 
         text = "aaa";
@@ -232,6 +245,8 @@ public class ViewHelperTest extends UnitFessTestCase {
         assertEquals(viewHelper.highlightTagPre + "aaa" + viewHelper.highlightTagPost + "&lt;b&gt;bbb&lt;/b&gt;",
                 viewHelper.escapeHighlight(text));
 
+        text = "111" + viewHelper.originalHighlightTagPre + "aaa" + viewHelper.originalHighlightTagPost;
+        assertEquals("111" + viewHelper.highlightTagPre + "aaa" + viewHelper.highlightTagPost, viewHelper.escapeHighlight(text));
     }
 
     public void test_getSitePath() {

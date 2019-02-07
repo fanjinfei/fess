@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.codelibs.fess.entity.FacetInfo;
 import org.codelibs.fess.entity.GeoInfo;
+import org.codelibs.fess.entity.HighlightInfo;
 import org.codelibs.fess.entity.SearchRequestParams;
 import org.codelibs.fess.unit.UnitFessTestCase;
 
@@ -52,9 +53,9 @@ public class QueryStringBuilderTest extends UnitFessTestCase {
     public void test_conditions_oq() {
         final String k = "oq";
         assertEquals("", getAsQuery(Collections.singletonMap(k, new String[] { "" })));
-        assertEquals("(aaa)", getAsQuery(Collections.singletonMap(k, new String[] { "aaa" })));
+        assertEquals("aaa", getAsQuery(Collections.singletonMap(k, new String[] { "aaa" })));
         assertEquals("(aaa OR bbb)", getAsQuery(Collections.singletonMap(k, new String[] { "aaa bbb" })));
-        assertEquals("(aaa OR bbb) (ccc)", getAsQuery(Collections.singletonMap(k, new String[] { "aaa bbb", "ccc" })));
+        assertEquals("(aaa OR bbb) ccc", getAsQuery(Collections.singletonMap(k, new String[] { "aaa bbb", "ccc" })));
         assertEquals("(aaa OR bbb) (ccc OR ddd)", getAsQuery(Collections.singletonMap(k, new String[] { "aaa bbb", "ccc ddd" })));
         assertEquals("(aaa OR bbb)", getAsQuery("111", Collections.singletonMap(k, new String[] { "aaa bbb" })));
     }
@@ -148,6 +149,11 @@ public class QueryStringBuilderTest extends UnitFessTestCase {
             @Override
             public String getSimilarDocHash() {
                 return null;
+            }
+
+            @Override
+            public HighlightInfo getHighlightInfo() {
+                return new HighlightInfo();
             }
 
         }).build();

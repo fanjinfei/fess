@@ -52,7 +52,18 @@
 												styleClass="form-control">
 												<la:option value="search"><la:message key="labels.searchlog_log_type_search" /></la:option>
 												<la:option value="click"><la:message key="labels.searchlog_log_type_click" /></la:option>
+												<la:option value="user_info"><la:message key="labels.searchlog_log_type_user_info" /></la:option>
 												<la:option value="favorite"><la:message key="labels.searchlog_log_type_favorite" /></la:option>
+												<la:option value="search_keyword_agg"><la:message key="labels.searchlog_log_type_search_keyword" /></la:option>
+												<la:option value="search_zerohit_agg"><la:message key="labels.searchlog_log_type_search_zerohit" /></la:option>
+												<la:option value="click_count_agg"><la:message key="labels.searchlog_log_type_click_count" /></la:option>
+												<la:option value="favorite_count_agg"><la:message key="labels.searchlog_log_type_favorite_count" /></la:option>
+												<la:option value="search_count_hour_agg"><la:message key="labels.searchlog_log_type_search_count_hour" /></la:option>
+												<la:option value="search_count_day_agg"><la:message key="labels.searchlog_log_type_search_count_day" /></la:option>
+												<la:option value="search_user_hour_agg"><la:message key="labels.searchlog_log_type_search_user_hour" /></la:option>
+												<la:option value="search_user_day_agg"><la:message key="labels.searchlog_log_type_search_user_day" /></la:option>
+												<la:option value="search_reqtimeavg_hour_agg"><la:message key="labels.searchlog_log_type_search_reqtimeavg_hour" /></la:option>
+												<la:option value="search_reqtimeavg_day_agg"><la:message key="labels.searchlog_log_type_search_reqtimeavg_day" /></la:option>
 											</la:select>
 										</div>
 									</div>
@@ -87,6 +98,20 @@
 										</div>
 									</div>
 									<div class="form-group">
+										<label for="logTypeSearch" class="col-sm-2 control-label"><la:message
+												key="labels.searchlog_size" /></label>
+										<div class="col-sm-4">
+											<la:select styleId="size" property="size"
+												styleClass="form-control">
+												<la:option value="25">25</la:option>
+												<la:option value="50">50</la:option>
+												<la:option value="100">100</la:option>
+												<la:option value="200">500</la:option>
+												<la:option value="1000">1000</la:option>
+											</la:select>
+										</div>
+									</div>
+									<div class="form-group">
 										<div class="col-sm-offset-2 col-sm-10">
 											<button type="submit" class="btn btn-primary" id="submit"
 												name="search"
@@ -116,20 +141,48 @@
 											<table class="table table-bordered table-striped dataTable">
 												<thead>
 													<tr>
+														<c:if test="${!logType.endsWith('_agg')}">
 														<th class="col-sm-3"><la:message
 																key="labels.searchlog_requested_time" /></th>
 														<th><la:message
 																key="labels.searchlog_log_message" /></th>
+														</c:if>
+														<c:if test="${logType.startsWith('search_count_') or logType.startsWith('search_user_')}">
+														<th><la:message
+																key="labels.searchlog_requested_time" /></th>
+														<th class="col-sm-3"><la:message
+																key="labels.searchlog_count" /></th>
+														</c:if>
+														<c:if test="${logType.startsWith('search_reqtimeavg_')}">
+														<th><la:message
+																key="labels.searchlog_requested_time" /></th>
+														<th class="col-sm-3"><la:message
+																key="labels.searchlog_value" /></th>
+														</c:if>
+														<c:if test="${logType.startsWith('search_keyword_') or logType.startsWith('search_zerohit_')} or logType.endsWith('_count_agg')}">
+														<th><la:message
+																key="labels.searchlog_value" /></th>
+														<th class="col-sm-3"><la:message
+																key="labels.searchlog_count" /></th>
+														</c:if>
 													</tr>
 												</thead>
 												<tbody>
 													<c:forEach var="data" varStatus="s"
 														items="${searchLogItems}">
+														<c:if test="${!logType.endsWith('_agg')}">
 														<tr
 															data-href="${contextPath}/admin/searchlog/details/4/${f:u(logType)}/${f:u(data.id)}">
 															<td>${f:h(data.requestedAt)}</td>
 															<td>${f:h(data.logMessage)}</td>
 														</tr>
+														</c:if>
+														<c:if test="${logType.endsWith('_agg')}">
+														<tr>
+															<td>${f:h(data.key)}</td>
+															<td>${f:h(data.count)}</td>
+														</tr>
+														</c:if>
 													</c:forEach>
 												</tbody>
 											</table>
@@ -137,7 +190,19 @@
 									</div>
 									<c:set var="pager" value="${searchLogPager}"
 										scope="request" />
+									<c:if test="${!logType.endsWith('_agg')}">
 									<c:import url="/WEB-INF/view/common/admin/crud/pagination.jsp" />
+									</c:if>
+									<c:if test="${logType.endsWith('_agg')}">
+									<div class="row">
+										<div class="col-sm-2">
+											<la:message key="labels.pagination_page_guide_msg"
+												arg0="${f:h(pager.currentPageNumber)}"
+												arg1="${f:h(pager.allPageCount)}"
+												arg2="${f:h(pager.allRecordCount)}" />
+										</div>
+									</div>
+									</c:if>
 								</c:if>
 							</div>
 							<!-- /.box-body -->

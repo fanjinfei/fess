@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,20 +25,8 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     /** The key of the configuration. e.g. Fess */
     String DOMAIN_TITLE = "domain.title";
 
-    /** The key of the configuration. e.g. elasticsearch */
-    String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
-
     /** The key of the configuration. e.g. http://localhost:9201 */
     String ELASTICSEARCH_HTTP_URL = "elasticsearch.http.url";
-
-    /** The key of the configuration. e.g. false */
-    String ELASTICSEARCH_TRANSPORT_SNIFF = "elasticsearch.transport.sniff";
-
-    /** The key of the configuration. e.g. 1m */
-    String ELASTICSEARCH_TRANSPORT_ping_timeout = "elasticsearch.transport.ping_timeout";
-
-    /** The key of the configuration. e.g. 5s */
-    String ELASTICSEARCH_TRANSPORT_nodes_sampler_interval = "elasticsearch.transport.nodes_sampler_interval";
 
     /** The key of the configuration. e.g. aes */
     String APP_CIPHER_ALGORISM = "app.cipher.algorism";
@@ -53,6 +41,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     -Dfile.encoding=UTF-8
     -Djna.nosys=true
     -Djdk.io.permissionsUseCanonicalPath=true
+    -Dhttp.maxConnections=20
     -server
     -Xmx512m
     -XX:MaxMetaspaceSize=128m
@@ -153,6 +142,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     /** The key of the configuration. e.g. return container.getComponent("crawlJob").logLevel("info").sessionId("{3}").webConfigIds([{0}] as String[]).fileConfigIds([{1}] as String[]).dataConfigIds([{2}] as String[]).jobExecutor(executor).execute(); */
     String JOB_TEMPLATE_SCRIPT = "job.template.script";
 
+    /** The key of the configuration. e.g. 0 */
+    String JOB_MAX_CRAWLER_PROCESSES = "job.max.crawler.processes";
+
     /** The key of the configuration. e.g. java */
     String JAVA_COMMAND_PATH = "java.command.path";
 
@@ -177,7 +169,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     /** The key of the configuration. e.g. license.properties */
     String SUPPORTED_UPLOADED_FILES = "supported.uploaded.files";
 
-    /** The key of the configuration. e.g. ar,bg,bn,ca,ckb_IQ,cs,da,de,el,en,en_IE,es,et,eu,fa,fi,fr,gl,gu,he,hi,hr,hu,hy,id,it,ja,ko,lt,lv,mk,ml,nl,no,pa,pl,pt,pt_BR,ro,ru,si,sq,sv,ta,te,th,tl,tr,uk,ur,vi,zh_CN,zh_TW,zh */
+    /** The key of the configuration. e.g. ar,bg,bn,ca,ckb_IQ,cs,da,de,el,en_IE,en,es,et,eu,fa,fi,fr,gl,gu,he,hi,hr,hu,hy,id,it,ja,ko,lt,lv,mk,ml,nl,no,pa,pl,pt_BR,pt,ro,ru,si,sq,sv,ta,te,th,tl,tr,uk,ur,vi,zh_CN,zh_TW,zh */
     String SUPPORTED_LANGUAGES = "supported.languages";
 
     /** The key of the configuration. e.g. 60 */
@@ -373,6 +365,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /** The key of the configuration. e.g. 0-1 */
     String INDEX_auto_expand_replicas = "index.auto_expand_replicas";
+
+    /** The key of the configuration. e.g. SHA-512 */
+    String INDEX_ID_DIGEST_ALGORITHM = "index.id.digest.algorithm";
 
     /** The key of the configuration. e.g. favorite_count */
     String INDEX_FIELD_favorite_count = "index.field.favorite_count";
@@ -599,10 +594,13 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     /** The key of the configuration. e.g. true */
     String QUERY_REPLACE_TERM_WITH_PREFIX_QUERY = "query.replace.term.with.prefix.query";
 
-    /** The key of the configuration. e.g. 40 */
+    /** The key of the configuration. e.g. !.?։؟۔܀܁܂।၊။።፧፨᙮᠃᠉‼‽⁇⁈⁉。﹒﹗！．？｡ */
+    String QUERY_HIGHLIGHT_TERMINAL_CHARS = "query.highlight.terminal.chars";
+
+    /** The key of the configuration. e.g. 60 */
     String QUERY_HIGHLIGHT_FRAGMENT_SIZE = "query.highlight.fragment.size";
 
-    /** The key of the configuration. e.g. 3 */
+    /** The key of the configuration. e.g. 2 */
     String QUERY_HIGHLIGHT_NUMBER_OF_FRAGMENTS = "query.highlight.number.of.fragments";
 
     /** The key of the configuration. e.g. fvh */
@@ -745,13 +743,13 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     */
     String QUERY_LANGUAGE_MAPPING = "query.language.mapping";
 
-    /** The key of the configuration. e.g. 0.2 */
+    /** The key of the configuration. e.g. 0.01 */
     String QUERY_BOOST_TITLE = "query.boost.title";
 
     /** The key of the configuration. e.g. 1.0 */
     String QUERY_BOOST_TITLE_LANG = "query.boost.title.lang";
 
-    /** The key of the configuration. e.g. 0.1 */
+    /** The key of the configuration. e.g. 0.005 */
     String QUERY_BOOST_CONTENT = "query.boost.content";
 
     /** The key of the configuration. e.g. 0.5 */
@@ -760,7 +758,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     /** The key of the configuration. e.g. true */
     String SMB_ROLE_FROM_FILE = "smb.role.from.file";
 
-    /** The key of the configuration. e.g. 1,2 */
+    /** The key of the configuration. e.g. 1,2,4:2 */
     String SMB_AVAILABLE_SID_TYPES = "smb.available.sid.types";
 
     /** The key of the configuration. e.g. true */
@@ -783,6 +781,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /** The key of the configuration. e.g. 4000 */
     String FORM_ADMIN_MAX_INPUT_SIZE = "form.admin.max.input.size";
+
+    /** The key of the configuration. e.g. false */
+    String FORM_ADMIN_LABEL_IN_CONFIG_ENABLED = "form.admin.label.in.config.enabled";
 
     /** The key of the configuration. e.g. admin */
     String AUTHENTICATION_ADMIN_USERS = "authentication.admin.users";
@@ -916,6 +917,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     /** The key of the configuration. e.g. 1000 */
     String PAGE_SCORE_BOOSTER_MAX_FETCH_SIZE = "page.score.booster.max.fetch.size";
 
+    /** The key of the configuration. e.g. 10000 */
+    String PAGE_SEARCHLOG_MAX_FETCH_SIZE = "page.searchlog.max.fetch.size";
+
     /** The key of the configuration. e.g. 0 */
     String PAGING_SEARCH_PAGE_START = "paging.search.page.start";
 
@@ -924,6 +928,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /** The key of the configuration. e.g. 100 */
     String PAGING_SEARCH_PAGE_MAX_SIZE = "paging.search.page.max.size";
+
+    /** The key of the configuration. e.g. -1 */
+    String SEARCHLOG_AGG_SHARD_SIZE = "searchlog.agg.shard.size";
 
     /** The key of the configuration. e.g. 100 */
     String THUMBNAIL_HTML_IMAGE_MIN_WIDTH = "thumbnail.html.image.min.width";
@@ -981,6 +988,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /** The key of the configuration. e.g. root@localhost */
     String MAIL_FROM_ADDRESS = "mail.from.address";
+
+    /** The key of the configuration. e.g.  */
+    String MAIL_HOSTNAME = "mail.hostname";
 
     /** The key of the configuration. e.g.  */
     String SCHEDULER_TARGET_NAME = "scheduler.target.name";
@@ -1442,47 +1452,12 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     String getDomainTitle();
 
     /**
-     * Get the value for the key 'elasticsearch.cluster.name'. <br>
-     * The value is, e.g. elasticsearch <br>
+     * Get the value for the key 'elasticsearch.http.url'. <br>
+     * The value is, e.g. http://localhost:9201 <br>
      * comment: Elasticsearch
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
-    String getElasticsearchClusterName();
-
-    /**
-     * Get the value for the key 'elasticsearch.http.url'. <br>
-     * The value is, e.g. http://localhost:9201 <br>
-     * @return The value of found property. (NotNull: if not found, exception but basically no way)
-     */
     String getElasticsearchHttpUrl();
-
-    /**
-     * Get the value for the key 'elasticsearch.transport.sniff'. <br>
-     * The value is, e.g. false <br>
-     * @return The value of found property. (NotNull: if not found, exception but basically no way)
-     */
-    String getElasticsearchTransportSniff();
-
-    /**
-     * Is the property for the key 'elasticsearch.transport.sniff' true? <br>
-     * The value is, e.g. false <br>
-     * @return The determination, true or false. (if not found, exception but basically no way)
-     */
-    boolean isElasticsearchTransportSniff();
-
-    /**
-     * Get the value for the key 'elasticsearch.transport.ping_timeout'. <br>
-     * The value is, e.g. 1m <br>
-     * @return The value of found property. (NotNull: if not found, exception but basically no way)
-     */
-    String getElasticsearchTransportPingTimeout();
-
-    /**
-     * Get the value for the key 'elasticsearch.transport.nodes_sampler_interval'. <br>
-     * The value is, e.g. 5s <br>
-     * @return The value of found property. (NotNull: if not found, exception but basically no way)
-     */
-    String getElasticsearchTransportNodesSamplerInterval();
 
     /**
      * Get the value for the key 'app.cipher.algorism'. <br>
@@ -1512,6 +1487,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     -Dfile.encoding=UTF-8
     -Djna.nosys=true
     -Djdk.io.permissionsUseCanonicalPath=true
+    -Dhttp.maxConnections=20
     -server
     -Xmx512m
     -XX:MaxMetaspaceSize=128m
@@ -1645,6 +1621,21 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     String getJobTemplateScript();
 
     /**
+     * Get the value for the key 'job.max.crawler.processes'. <br>
+     * The value is, e.g. 0 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getJobMaxCrawlerProcesses();
+
+    /**
+     * Get the value for the key 'job.max.crawler.processes' as {@link Integer}. <br>
+     * The value is, e.g. 0 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     * @throws NumberFormatException When the property is not integer.
+     */
+    Integer getJobMaxCrawlerProcessesAsInteger();
+
+    /**
      * Get the value for the key 'java.command.path'. <br>
      * The value is, e.g. java <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
@@ -1717,7 +1708,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /**
      * Get the value for the key 'supported.languages'. <br>
-     * The value is, e.g. ar,bg,bn,ca,ckb_IQ,cs,da,de,el,en,en_IE,es,et,eu,fa,fi,fr,gl,gu,he,hi,hr,hu,hy,id,it,ja,ko,lt,lv,mk,ml,nl,no,pa,pl,pt,pt_BR,ro,ru,si,sq,sv,ta,te,th,tl,tr,uk,ur,vi,zh_CN,zh_TW,zh <br>
+     * The value is, e.g. ar,bg,bn,ca,ckb_IQ,cs,da,de,el,en_IE,en,es,et,eu,fa,fi,fr,gl,gu,he,hi,hr,hu,hy,id,it,ja,ko,lt,lv,mk,ml,nl,no,pa,pl,pt_BR,pt,ro,ru,si,sq,sv,ta,te,th,tl,tr,uk,ur,vi,zh_CN,zh_TW,zh <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
     String getSupportedLanguages();
@@ -2521,6 +2512,13 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     String getIndexAutoExpandReplicas();
 
     /**
+     * Get the value for the key 'index.id.digest.algorithm'. <br>
+     * The value is, e.g. SHA-512 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getIndexIdDigestAlgorithm();
+
+    /**
      * Get the value for the key 'index.field.favorite_count'. <br>
      * The value is, e.g. favorite_count <br>
      * comment: field names
@@ -3169,15 +3167,22 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     boolean isQueryReplaceTermWithPrefixQuery();
 
     /**
+     * Get the value for the key 'query.highlight.terminal.chars'. <br>
+     * The value is, e.g. !.?։؟۔܀܁܂।၊။።፧፨᙮᠃᠉‼‽⁇⁈⁉。﹒﹗！．？｡ <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getQueryHighlightTerminalChars();
+
+    /**
      * Get the value for the key 'query.highlight.fragment.size'. <br>
-     * The value is, e.g. 40 <br>
+     * The value is, e.g. 60 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
     String getQueryHighlightFragmentSize();
 
     /**
      * Get the value for the key 'query.highlight.fragment.size' as {@link Integer}. <br>
-     * The value is, e.g. 40 <br>
+     * The value is, e.g. 60 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      * @throws NumberFormatException When the property is not integer.
      */
@@ -3185,14 +3190,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /**
      * Get the value for the key 'query.highlight.number.of.fragments'. <br>
-     * The value is, e.g. 3 <br>
+     * The value is, e.g. 2 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
     String getQueryHighlightNumberOfFragments();
 
     /**
      * Get the value for the key 'query.highlight.number.of.fragments' as {@link Integer}. <br>
-     * The value is, e.g. 3 <br>
+     * The value is, e.g. 2 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      * @throws NumberFormatException When the property is not integer.
      */
@@ -3584,7 +3589,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /**
      * Get the value for the key 'query.boost.title'. <br>
-     * The value is, e.g. 0.2 <br>
+     * The value is, e.g. 0.01 <br>
      * comment: boost
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
@@ -3592,7 +3597,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /**
      * Get the value for the key 'query.boost.title' as {@link java.math.BigDecimal}. <br>
-     * The value is, e.g. 0.2 <br>
+     * The value is, e.g. 0.01 <br>
      * comment: boost
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      * @throws NumberFormatException When the property is not decimal.
@@ -3616,14 +3621,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /**
      * Get the value for the key 'query.boost.content'. <br>
-     * The value is, e.g. 0.1 <br>
+     * The value is, e.g. 0.005 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
     String getQueryBoostContent();
 
     /**
      * Get the value for the key 'query.boost.content' as {@link java.math.BigDecimal}. <br>
-     * The value is, e.g. 0.1 <br>
+     * The value is, e.g. 0.005 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      * @throws NumberFormatException When the property is not decimal.
      */
@@ -3662,18 +3667,10 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
     /**
      * Get the value for the key 'smb.available.sid.types'. <br>
-     * The value is, e.g. 1,2 <br>
+     * The value is, e.g. 1,2,4:2 <br>
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
     String getSmbAvailableSidTypes();
-
-    /**
-     * Get the value for the key 'smb.available.sid.types' as {@link Integer}. <br>
-     * The value is, e.g. 1,2 <br>
-     * @return The value of found property. (NotNull: if not found, exception but basically no way)
-     * @throws NumberFormatException When the property is not integer.
-     */
-    Integer getSmbAvailableSidTypesAsInteger();
 
     /**
      * Get the value for the key 'file.role.from.file'. <br>
@@ -3755,6 +3752,20 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
      * @throws NumberFormatException When the property is not integer.
      */
     Integer getFormAdminMaxInputSizeAsInteger();
+
+    /**
+     * Get the value for the key 'form.admin.label.in.config.enabled'. <br>
+     * The value is, e.g. false <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getFormAdminLabelInConfigEnabled();
+
+    /**
+     * Is the property for the key 'form.admin.label.in.config.enabled' true? <br>
+     * The value is, e.g. false <br>
+     * @return The determination, true or false. (if not found, exception but basically no way)
+     */
+    boolean isFormAdminLabelInConfigEnabled();
 
     /**
      * Get the value for the key 'authentication.admin.users'. <br>
@@ -4375,6 +4386,21 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
     Integer getPageScoreBoosterMaxFetchSizeAsInteger();
 
     /**
+     * Get the value for the key 'page.searchlog.max.fetch.size'. <br>
+     * The value is, e.g. 10000 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getPageSearchlogMaxFetchSize();
+
+    /**
+     * Get the value for the key 'page.searchlog.max.fetch.size' as {@link Integer}. <br>
+     * The value is, e.g. 10000 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     * @throws NumberFormatException When the property is not integer.
+     */
+    Integer getPageSearchlogMaxFetchSizeAsInteger();
+
+    /**
      * Get the value for the key 'paging.search.page.start'. <br>
      * The value is, e.g. 0 <br>
      * comment: search page
@@ -4420,6 +4446,21 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
      * @throws NumberFormatException When the property is not integer.
      */
     Integer getPagingSearchPageMaxSizeAsInteger();
+
+    /**
+     * Get the value for the key 'searchlog.agg.shard.size'. <br>
+     * The value is, e.g. -1 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getSearchlogAggShardSize();
+
+    /**
+     * Get the value for the key 'searchlog.agg.shard.size' as {@link Integer}. <br>
+     * The value is, e.g. -1 <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     * @throws NumberFormatException When the property is not integer.
+     */
+    Integer getSearchlogAggShardSizeAsInteger();
 
     /**
      * Get the value for the key 'thumbnail.html.image.min.width'. <br>
@@ -4642,6 +4683,21 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
      * @return The value of found property. (NotNull: if not found, exception but basically no way)
      */
     String getMailFromAddress();
+
+    /**
+     * Get the value for the key 'mail.hostname'. <br>
+     * The value is, e.g.  <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     */
+    String getMailHostname();
+
+    /**
+     * Get the value for the key 'mail.hostname' as {@link Integer}. <br>
+     * The value is, e.g.  <br>
+     * @return The value of found property. (NotNull: if not found, exception but basically no way)
+     * @throws NumberFormatException When the property is not integer.
+     */
+    Integer getMailHostnameAsInteger();
 
     /**
      * Get the value for the key 'scheduler.target.name'. <br>
@@ -5924,28 +5980,8 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             return get(FessConfig.DOMAIN_TITLE);
         }
 
-        public String getElasticsearchClusterName() {
-            return get(FessConfig.ELASTICSEARCH_CLUSTER_NAME);
-        }
-
         public String getElasticsearchHttpUrl() {
             return get(FessConfig.ELASTICSEARCH_HTTP_URL);
-        }
-
-        public String getElasticsearchTransportSniff() {
-            return get(FessConfig.ELASTICSEARCH_TRANSPORT_SNIFF);
-        }
-
-        public boolean isElasticsearchTransportSniff() {
-            return is(FessConfig.ELASTICSEARCH_TRANSPORT_SNIFF);
-        }
-
-        public String getElasticsearchTransportPingTimeout() {
-            return get(FessConfig.ELASTICSEARCH_TRANSPORT_ping_timeout);
-        }
-
-        public String getElasticsearchTransportNodesSamplerInterval() {
-            return get(FessConfig.ELASTICSEARCH_TRANSPORT_nodes_sampler_interval);
         }
 
         public String getAppCipherAlgorism() {
@@ -5990,6 +6026,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
         public String getJobTemplateScript() {
             return get(FessConfig.JOB_TEMPLATE_SCRIPT);
+        }
+
+        public String getJobMaxCrawlerProcesses() {
+            return get(FessConfig.JOB_MAX_CRAWLER_PROCESSES);
+        }
+
+        public Integer getJobMaxCrawlerProcessesAsInteger() {
+            return getAsInteger(FessConfig.JOB_MAX_CRAWLER_PROCESSES);
         }
 
         public String getJavaCommandPath() {
@@ -6468,6 +6512,10 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             return get(FessConfig.INDEX_auto_expand_replicas);
         }
 
+        public String getIndexIdDigestAlgorithm() {
+            return get(FessConfig.INDEX_ID_DIGEST_ALGORITHM);
+        }
+
         public String getIndexFieldFavoriteCount() {
             return get(FessConfig.INDEX_FIELD_favorite_count);
         }
@@ -6828,6 +6876,10 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             return is(FessConfig.QUERY_REPLACE_TERM_WITH_PREFIX_QUERY);
         }
 
+        public String getQueryHighlightTerminalChars() {
+            return get(FessConfig.QUERY_HIGHLIGHT_TERMINAL_CHARS);
+        }
+
         public String getQueryHighlightFragmentSize() {
             return get(FessConfig.QUERY_HIGHLIGHT_FRAGMENT_SIZE);
         }
@@ -7064,10 +7116,6 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             return get(FessConfig.SMB_AVAILABLE_SID_TYPES);
         }
 
-        public Integer getSmbAvailableSidTypesAsInteger() {
-            return getAsInteger(FessConfig.SMB_AVAILABLE_SID_TYPES);
-        }
-
         public String getFileRoleFromFile() {
             return get(FessConfig.FILE_ROLE_FROM_FILE);
         }
@@ -7110,6 +7158,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
         public Integer getFormAdminMaxInputSizeAsInteger() {
             return getAsInteger(FessConfig.FORM_ADMIN_MAX_INPUT_SIZE);
+        }
+
+        public String getFormAdminLabelInConfigEnabled() {
+            return get(FessConfig.FORM_ADMIN_LABEL_IN_CONFIG_ENABLED);
+        }
+
+        public boolean isFormAdminLabelInConfigEnabled() {
+            return is(FessConfig.FORM_ADMIN_LABEL_IN_CONFIG_ENABLED);
         }
 
         public String getAuthenticationAdminUsers() {
@@ -7436,6 +7492,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             return getAsInteger(FessConfig.PAGE_SCORE_BOOSTER_MAX_FETCH_SIZE);
         }
 
+        public String getPageSearchlogMaxFetchSize() {
+            return get(FessConfig.PAGE_SEARCHLOG_MAX_FETCH_SIZE);
+        }
+
+        public Integer getPageSearchlogMaxFetchSizeAsInteger() {
+            return getAsInteger(FessConfig.PAGE_SEARCHLOG_MAX_FETCH_SIZE);
+        }
+
         public String getPagingSearchPageStart() {
             return get(FessConfig.PAGING_SEARCH_PAGE_START);
         }
@@ -7458,6 +7522,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
         public Integer getPagingSearchPageMaxSizeAsInteger() {
             return getAsInteger(FessConfig.PAGING_SEARCH_PAGE_MAX_SIZE);
+        }
+
+        public String getSearchlogAggShardSize() {
+            return get(FessConfig.SEARCHLOG_AGG_SHARD_SIZE);
+        }
+
+        public Integer getSearchlogAggShardSizeAsInteger() {
+            return getAsInteger(FessConfig.SEARCHLOG_AGG_SHARD_SIZE);
         }
 
         public String getThumbnailHtmlImageMinWidth() {
@@ -7578,6 +7650,14 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
 
         public String getMailFromAddress() {
             return get(FessConfig.MAIL_FROM_ADDRESS);
+        }
+
+        public String getMailHostname() {
+            return get(FessConfig.MAIL_HOSTNAME);
+        }
+
+        public Integer getMailHostnameAsInteger() {
+            return getAsInteger(FessConfig.MAIL_HOSTNAME);
         }
 
         public String getSchedulerTargetName() {
@@ -8292,17 +8372,13 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
         protected java.util.Map<String, String> prepareGeneratedDefaultMap() {
             java.util.Map<String, String> defaultMap = super.prepareGeneratedDefaultMap();
             defaultMap.put(FessConfig.DOMAIN_TITLE, "Fess");
-            defaultMap.put(FessConfig.ELASTICSEARCH_CLUSTER_NAME, "elasticsearch");
             defaultMap.put(FessConfig.ELASTICSEARCH_HTTP_URL, "http://localhost:9201");
-            defaultMap.put(FessConfig.ELASTICSEARCH_TRANSPORT_SNIFF, "false");
-            defaultMap.put(FessConfig.ELASTICSEARCH_TRANSPORT_ping_timeout, "1m");
-            defaultMap.put(FessConfig.ELASTICSEARCH_TRANSPORT_nodes_sampler_interval, "5s");
             defaultMap.put(FessConfig.APP_CIPHER_ALGORISM, "aes");
             defaultMap.put(FessConfig.APP_CIPHER_KEY, "___change__me___");
             defaultMap.put(FessConfig.APP_DIGEST_ALGORISM, "sha256");
             defaultMap
                     .put(FessConfig.JVM_CRAWLER_OPTIONS,
-                            "-Djava.awt.headless=true\n-Dfile.encoding=UTF-8\n-Djna.nosys=true\n-Djdk.io.permissionsUseCanonicalPath=true\n-server\n-Xmx512m\n-XX:MaxMetaspaceSize=128m\n-XX:CompressedClassSpaceSize=32m\n-XX:-UseGCOverheadLimit\n-XX:+UseConcMarkSweepGC\n-XX:CMSInitiatingOccupancyFraction=75\n-XX:+UseCMSInitiatingOccupancyOnly\n-XX:+UseTLAB\n-XX:+DisableExplicitGC\n-XX:+HeapDumpOnOutOfMemoryError\n-XX:-OmitStackTraceInFastThrow\n-Djcifs.smb.client.responseTimeout=30000\n-Djcifs.smb.client.soTimeout=35000\n-Djcifs.smb.client.connTimeout=60000\n-Djcifs.smb.client.sessionTimeout=60000\n-Dgroovy.use.classvalue=true\n-Dio.netty.noUnsafe=true\n-Dio.netty.noKeySetOptimization=true\n-Dio.netty.recycler.maxCapacityPerThread=0\n-Dlog4j.shutdownHookEnabled=false\n-Dlog4j2.disable.jmx=true\n-Dlog4j.skipJansi=true\n-Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider\n-Dorg.apache.pdfbox.rendering.UsePureJavaCMYKConversion=true\n");
+                            "-Djava.awt.headless=true\n-Dfile.encoding=UTF-8\n-Djna.nosys=true\n-Djdk.io.permissionsUseCanonicalPath=true\n-Dhttp.maxConnections=20\n-server\n-Xmx512m\n-XX:MaxMetaspaceSize=128m\n-XX:CompressedClassSpaceSize=32m\n-XX:-UseGCOverheadLimit\n-XX:+UseConcMarkSweepGC\n-XX:CMSInitiatingOccupancyFraction=75\n-XX:+UseCMSInitiatingOccupancyOnly\n-XX:+UseTLAB\n-XX:+DisableExplicitGC\n-XX:+HeapDumpOnOutOfMemoryError\n-XX:-OmitStackTraceInFastThrow\n-Djcifs.smb.client.responseTimeout=30000\n-Djcifs.smb.client.soTimeout=35000\n-Djcifs.smb.client.connTimeout=60000\n-Djcifs.smb.client.sessionTimeout=60000\n-Dgroovy.use.classvalue=true\n-Dio.netty.noUnsafe=true\n-Dio.netty.noKeySetOptimization=true\n-Dio.netty.recycler.maxCapacityPerThread=0\n-Dlog4j.shutdownHookEnabled=false\n-Dlog4j2.disable.jmx=true\n-Dlog4j.skipJansi=true\n-Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider\n-Dorg.apache.pdfbox.rendering.UsePureJavaCMYKConversion=true\n");
             defaultMap
                     .put(FessConfig.JVM_SUGGEST_OPTIONS,
                             "-Djava.awt.headless=true\n-Dfile.encoding=UTF-8\n-Djna.nosys=true\n-Djdk.io.permissionsUseCanonicalPath=true\n-server\n-Xmx256m\n-XX:MaxMetaspaceSize=128m\n-XX:CompressedClassSpaceSize=32m\n-XX:-UseGCOverheadLimit\n-XX:+UseConcMarkSweepGC\n-XX:CMSInitiatingOccupancyFraction=75\n-XX:+UseCMSInitiatingOccupancyOnly\n-XX:+UseTLAB\n-XX:+DisableExplicitGC\n-XX:+HeapDumpOnOutOfMemoryError\n-Dgroovy.use.classvalue=true\n-Dio.netty.noUnsafe=true\n-Dio.netty.noKeySetOptimization=true\n-Dio.netty.recycler.maxCapacityPerThread=0\n-Dlog4j.shutdownHookEnabled=false\n-Dlog4j2.disable.jmx=true\n-Dlog4j.skipJansi=true\n");
@@ -8316,6 +8392,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap
                     .put(FessConfig.JOB_TEMPLATE_SCRIPT,
                             "return container.getComponent(\"crawlJob\").logLevel(\"info\").sessionId(\"{3}\").webConfigIds([{0}] as String[]).fileConfigIds([{1}] as String[]).dataConfigIds([{2}] as String[]).jobExecutor(executor).execute();");
+            defaultMap.put(FessConfig.JOB_MAX_CRAWLER_PROCESSES, "0");
             defaultMap.put(FessConfig.JAVA_COMMAND_PATH, "java");
             defaultMap.put(FessConfig.PATH_ENCODING, "UTF-8");
             defaultMap.put(FessConfig.USE_OWN_TMP_DIR, "true");
@@ -8326,7 +8403,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap.put(FessConfig.SUPPORTED_UPLOADED_FILES, "license.properties");
             defaultMap
                     .put(FessConfig.SUPPORTED_LANGUAGES,
-                            "ar,bg,bn,ca,ckb_IQ,cs,da,de,el,en,en_IE,es,et,eu,fa,fi,fr,gl,gu,he,hi,hr,hu,hy,id,it,ja,ko,lt,lv,mk,ml,nl,no,pa,pl,pt,pt_BR,ro,ru,si,sq,sv,ta,te,th,tl,tr,uk,ur,vi,zh_CN,zh_TW,zh");
+                            "ar,bg,bn,ca,ckb_IQ,cs,da,de,el,en_IE,en,es,et,eu,fa,fi,fr,gl,gu,he,hi,hr,hu,hy,id,it,ja,ko,lt,lv,mk,ml,nl,no,pa,pl,pt_BR,pt,ro,ru,si,sq,sv,ta,te,th,tl,tr,uk,ur,vi,zh_CN,zh_TW,zh");
             defaultMap.put(FessConfig.API_ACCESS_TOKEN_LENGTH, "60");
             defaultMap.put(FessConfig.API_ACCESS_TOKEN_REQUIRED, "false");
             defaultMap.put(FessConfig.API_ACCESS_TOKEN_REQUEST_PARAMETER, "");
@@ -8393,6 +8470,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap.put(FessConfig.INDEX_CODEC, "default");
             defaultMap.put(FessConfig.INDEX_number_of_shards, "5");
             defaultMap.put(FessConfig.INDEX_auto_expand_replicas, "0-1");
+            defaultMap.put(FessConfig.INDEX_ID_DIGEST_ALGORITHM, "SHA-512");
             defaultMap.put(FessConfig.INDEX_FIELD_favorite_count, "favorite_count");
             defaultMap.put(FessConfig.INDEX_FIELD_click_count, "click_count");
             defaultMap.put(FessConfig.INDEX_FIELD_config_id, "config_id");
@@ -8468,8 +8546,9 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap.put(FessConfig.QUERY_GEO_FIELDS, "location");
             defaultMap.put(FessConfig.QUERY_BROWSER_LANG_PARAMETER_NAME, "browser_lang");
             defaultMap.put(FessConfig.QUERY_REPLACE_TERM_WITH_PREFIX_QUERY, "true");
-            defaultMap.put(FessConfig.QUERY_HIGHLIGHT_FRAGMENT_SIZE, "40");
-            defaultMap.put(FessConfig.QUERY_HIGHLIGHT_NUMBER_OF_FRAGMENTS, "3");
+            defaultMap.put(FessConfig.QUERY_HIGHLIGHT_TERMINAL_CHARS, "!.?։؟۔܀܁܂।၊။።፧፨᙮᠃᠉‼‽⁇⁈⁉。﹒﹗！．？｡");
+            defaultMap.put(FessConfig.QUERY_HIGHLIGHT_FRAGMENT_SIZE, "60");
+            defaultMap.put(FessConfig.QUERY_HIGHLIGHT_NUMBER_OF_FRAGMENTS, "2");
             defaultMap.put(FessConfig.QUERY_HIGHLIGHT_TYPE, "fvh");
             defaultMap.put(FessConfig.QUERY_HIGHLIGHT_TAG_PRE, "<strong>");
             defaultMap.put(FessConfig.QUERY_HIGHLIGHT_TAG_POST, "</strong>");
@@ -8499,12 +8578,12 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap
                     .put(FessConfig.QUERY_LANGUAGE_MAPPING,
                             "ar=ar\nbg=bg\nbn=bn\nca=ca\nckb-iq=ckb-iq\nckb_IQ=ckb-iq\ncs=cs\nda=da\nde=de\nel=el\nen=en\nen-ie=en-ie\nen_IE=en-ie\nes=es\net=et\neu=eu\nfa=fa\nfi=fi\nfr=fr\ngl=gl\ngu=gu\nhe=he\nhi=hi\nhr=hr\nhu=hu\nhy=hy\nid=id\nit=it\nja=ja\nko=ko\nlt=lt\nlv=lv\nmk=mk\nml=ml\nnl=nl\nno=no\npa=pa\npl=pl\npt=pt\npt-br=pt-br\npt_BR=pt-br\nro=ro\nru=ru\nsi=si\nsq=sq\nsv=sv\nta=ta\nte=te\nth=th\ntl=tl\ntr=tr\nuk=uk\nur=ur\nvi=vi\nzh-cn=zh-cn\nzh_CN=zh-cn\nzh-tw=zh-tw\nzh_TW=zh-tw\nzh=zh\n");
-            defaultMap.put(FessConfig.QUERY_BOOST_TITLE, "0.2");
+            defaultMap.put(FessConfig.QUERY_BOOST_TITLE, "0.01");
             defaultMap.put(FessConfig.QUERY_BOOST_TITLE_LANG, "1.0");
-            defaultMap.put(FessConfig.QUERY_BOOST_CONTENT, "0.1");
+            defaultMap.put(FessConfig.QUERY_BOOST_CONTENT, "0.005");
             defaultMap.put(FessConfig.QUERY_BOOST_CONTENT_LANG, "0.5");
             defaultMap.put(FessConfig.SMB_ROLE_FROM_FILE, "true");
-            defaultMap.put(FessConfig.SMB_AVAILABLE_SID_TYPES, "1,2");
+            defaultMap.put(FessConfig.SMB_AVAILABLE_SID_TYPES, "1,2,4:2");
             defaultMap.put(FessConfig.FILE_ROLE_FROM_FILE, "true");
             defaultMap.put(FessConfig.FTP_ROLE_FROM_FILE, "true");
             defaultMap.put(FessConfig.INDEX_BACKUP_TARGETS, ".fess_basic_config.bulk,.fess_config.bulk,.fess_user.bulk,system.properties");
@@ -8514,6 +8593,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
                     .put(FessConfig.LOGGING_SEARCH_DOCS_FIELDS,
                             "filetype,created,click_count,title,doc_id,url,score,site,filename,host,digest,boost,mimetype,favorite_count,_id,lang,last_modified,content_length,timestamp");
             defaultMap.put(FessConfig.FORM_ADMIN_MAX_INPUT_SIZE, "4000");
+            defaultMap.put(FessConfig.FORM_ADMIN_LABEL_IN_CONFIG_ENABLED, "false");
             defaultMap.put(FessConfig.AUTHENTICATION_ADMIN_USERS, "admin");
             defaultMap.put(FessConfig.AUTHENTICATION_ADMIN_ROLES, "admin");
             defaultMap.put(FessConfig.ROLE_SEARCH_DEFAULT_PERMISSIONS, "");
@@ -8558,9 +8638,11 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap.put(FessConfig.PAGE_THUMBNAIL_QUEUE_MAX_FETCH_SIZE, "100");
             defaultMap.put(FessConfig.PAGE_THUMBNAIL_PURGE_MAX_FETCH_SIZE, "100");
             defaultMap.put(FessConfig.PAGE_SCORE_BOOSTER_MAX_FETCH_SIZE, "1000");
+            defaultMap.put(FessConfig.PAGE_SEARCHLOG_MAX_FETCH_SIZE, "10000");
             defaultMap.put(FessConfig.PAGING_SEARCH_PAGE_START, "0");
             defaultMap.put(FessConfig.PAGING_SEARCH_PAGE_SIZE, "10");
             defaultMap.put(FessConfig.PAGING_SEARCH_PAGE_MAX_SIZE, "100");
+            defaultMap.put(FessConfig.SEARCHLOG_AGG_SHARD_SIZE, "-1");
             defaultMap.put(FessConfig.THUMBNAIL_HTML_IMAGE_MIN_WIDTH, "100");
             defaultMap.put(FessConfig.THUMBNAIL_HTML_IMAGE_MIN_HEIGHT, "100");
             defaultMap.put(FessConfig.THUMBNAIL_HTML_IMAGE_MAX_ASPECT_RATIO, "3.0");
@@ -8580,6 +8662,7 @@ public interface FessConfig extends FessEnv, org.codelibs.fess.mylasta.direction
             defaultMap.put(FessConfig.USER_CODE_PATTERN, "[a-zA-Z0-9_]+");
             defaultMap.put(FessConfig.MAIL_FROM_NAME, "Administrator");
             defaultMap.put(FessConfig.MAIL_FROM_ADDRESS, "root@localhost");
+            defaultMap.put(FessConfig.MAIL_HOSTNAME, "");
             defaultMap.put(FessConfig.SCHEDULER_TARGET_NAME, "");
             defaultMap.put(FessConfig.SCHEDULER_JOB_CLASS, "org.codelibs.fess.app.job.ScriptExecutorJob");
             defaultMap.put(FessConfig.SCHEDULER_CONCURRENT_EXEC_MODE, "QUIT");

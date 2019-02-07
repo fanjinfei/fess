@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.codelibs.core.lang.StringUtil;
 import org.codelibs.fess.Constants;
@@ -85,11 +86,6 @@ public abstract class AbstractDataStore implements DataStore {
         // boost
         defaultDataMap.put(fessConfig.getIndexFieldBoost(), config.getBoost().toString());
         // label: labelType
-        final List<String> labelTypeList = new ArrayList<>();
-        for (final String labelType : config.getLabelTypeValues()) {
-            labelTypeList.add(labelType);
-        }
-        defaultDataMap.put(fessConfig.getIndexFieldLabel(), labelTypeList);
         // role: roleType
         final List<String> roleTypeList = new ArrayList<>();
         stream(config.getPermissions()).of(stream -> stream.forEach(p -> roleTypeList.add(p)));
@@ -109,7 +105,7 @@ public abstract class AbstractDataStore implements DataStore {
         // id
         // virtual_host
         defaultDataMap.put(fessConfig.getIndexFieldVirtualHost(),
-                stream(config.getVirtualHosts()).get(stream -> stream.filter(StringUtil::isNotBlank).toArray(n -> new String[n])));
+                stream(config.getVirtualHosts()).get(stream -> stream.filter(StringUtil::isNotBlank).collect(Collectors.toList())));
 
         storeData(config, callback, paramMap, configScriptMap, defaultDataMap);
 

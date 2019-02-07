@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -32,6 +34,7 @@ import javax.annotation.PostConstruct;
 
 import org.codelibs.core.lang.StringUtil;
 import org.codelibs.core.misc.Pair;
+import org.codelibs.fess.Constants;
 import org.codelibs.fess.es.client.FessEsClient;
 import org.codelibs.fess.es.config.exbhv.BadWordBhv;
 import org.codelibs.fess.es.config.exbhv.ElevateWordBhv;
@@ -77,6 +80,8 @@ public class SuggestHelper {
     protected List<String> contentFieldList;
 
     protected PopularWordHelper popularWordHelper = null;
+
+    public long searchStoreIntervalMinute = 1;
 
     @PostConstruct
     public void init() {
@@ -127,7 +132,7 @@ public class SuggestHelper {
     }
 
     public void indexFromSearchLog(final List<SearchLog> searchLogList) {
-        final Set<String> sessionIdSet = new HashSet<>();
+        final Map<String, LocalDateTime> duplicateSessionMap = new HashMap<>();
         searchLogList.stream().forEach(
                 searchLog -> {
                     if (searchLog.getHitCount() == null
@@ -135,9 +140,24 @@ public class SuggestHelper {
                         return;
                     }
 
-                    final String sessionId = searchLog.getUserSessionId();
-                    if (sessionId == null || sessionIdSet.contains(sessionId)) {
+                    final String sessionId;
+                    if (searchLog.getUserSessionId() != null) {
+                        sessionId = searchLog.getUserSessionId();
+                    } else {
+                        if (Constants.SEARCH_LOG_ACCESS_TYPE_WEB.equals(searchLog.getAccessType())) {
+                            sessionId = searchLog.getClientIp();
+                        } else {
+                            sessionId = searchLog.getClientIp() + '_' + searchLog.getSearchWord();
+                        }
+                    }
+
+                    final LocalDateTime requestedAt = searchLog.getRequestedAt();
+                    if (sessionId == null) {
                         return;
+                    } else if (duplicateSessionMap.containsKey(sessionId)) {
+                        if (duplicateSessionMap.get(sessionId).plusMinutes(searchStoreIntervalMinute).isAfter(requestedAt)) {
+                            return;
+                        }
                     }
 
                     final StringBuilder sb = new StringBuilder(100);
@@ -171,7 +191,7 @@ public class SuggestHelper {
                         if (fessConfig.isValidSearchLogPermissions(roles.toArray(new String[roles.size()]))) {
                             suggester.indexer().indexFromSearchWord(sb.toString(), fields.toArray(new String[fields.size()]),
                                     tags.toArray(new String[tags.size()]), roles.toArray(new String[roles.size()]), 1, langs);
-                            sessionIdSet.add(sessionId);
+                            duplicateSessionMap.put(sessionId, requestedAt);
                         }
                     }
                 });

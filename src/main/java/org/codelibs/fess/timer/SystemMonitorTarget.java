@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,6 +189,7 @@ public class SystemMonitorTarget implements TimeoutTarget {
             builder.startObject();
             response.toXContent(XContentFactory.jsonBuilder(), ToXContent.EMPTY_PARAMS);
             builder.endObject();
+            builder.flush();
             try (OutputStream out = builder.getOutputStream()) {
                 stats = ((ByteArrayOutputStream) out).toString(Constants.UTF_8);
             }

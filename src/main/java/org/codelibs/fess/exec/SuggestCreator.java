@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,13 +105,9 @@ public class SuggestCreator {
             }
         }
 
-        final String transportAddresses = System.getProperty(Constants.FESS_ES_TRANSPORT_ADDRESSES);
-        if (StringUtil.isNotBlank(transportAddresses)) {
-            System.setProperty(EsClient.TRANSPORT_ADDRESSES, transportAddresses);
-        }
-        final String clusterName = System.getProperty(Constants.FESS_ES_CLUSTER_NAME);
-        if (StringUtil.isNotBlank(clusterName)) {
-            System.setProperty(EsClient.CLUSTER_NAME, clusterName);
+        final String httpAddress = System.getProperty(Constants.FESS_ES_HTTP_ADDRESS);
+        if (StringUtil.isNotBlank(httpAddress)) {
+            System.setProperty(EsClient.HTTP_ADDRESS, httpAddress);
         }
 
         TimeoutTask systemMonitorTask = null;

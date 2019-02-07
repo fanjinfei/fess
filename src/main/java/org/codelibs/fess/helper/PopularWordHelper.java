@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.annotation.PostConstruct;
 import org.codelibs.core.lang.StringUtil;
 import org.codelibs.fess.entity.SearchRequestParams.SearchRequestType;
 import org.codelibs.fess.mylasta.direction.FessConfig;
+import org.codelibs.fess.suggest.exception.SuggesterException;
 import org.codelibs.fess.suggest.request.popularwords.PopularWordsRequestBuilder;
 import org.codelibs.fess.util.ComponentUtil;
 import org.slf4j.Logger;
@@ -78,9 +79,12 @@ public class PopularWordHelper {
                         stream(baseRoles).of(stream -> stream.forEach(role -> popularWordsRequestBuilder.addRole(role)));
                         stream(baseFields).of(stream -> stream.forEach(field -> popularWordsRequestBuilder.addField(field)));
                         stream(baseExcludes).of(stream -> stream.forEach(exclude -> popularWordsRequestBuilder.addExcludeWord(exclude)));
-                        popularWordsRequestBuilder.execute().then(r -> {
-                            r.getItems().stream().forEach(item -> wordList.add(item.getText()));
-                        }).error(t -> logger.warn("Failed to generate popular words.", t));
+                        try {
+                            popularWordsRequestBuilder.execute().getResponse().getItems().stream()
+                                    .forEach(item -> wordList.add(item.getText()));
+                        } catch (final SuggesterException e) {
+                            logger.warn("Failed to generate popular words.", e);
+                        }
 
                         return wordList;
                     });

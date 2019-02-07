@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@ import static org.codelibs.core.stream.StreamUtil.stream;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.codelibs.core.lang.StringUtil;
@@ -43,69 +41,17 @@ import org.codelibs.fess.util.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SuggestJob {
-    private static final String REMOTE_DEBUG_OPTIONS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=localhost:8000";
+public class SuggestJob extends ExecJob {
 
     private static final Logger logger = LoggerFactory.getLogger(SuggestJob.class);
 
-    protected JobExecutor jobExecutor;
-
-    protected String sessionId;
-
-    protected boolean useLocaleElasticsearch = true;
-
-    protected String logFilePath;
-
-    protected String logLevel;
-
-    protected String jvmOptions;
-
-    protected String lastaEnv;
-
-    public SuggestJob jobExecutor(final JobExecutor jobExecutor) {
-        this.jobExecutor = jobExecutor;
-        return this;
-    }
-
-    public SuggestJob sessionId(final String sessionId) {
-        this.sessionId = sessionId;
-        return this;
-    }
-
-    public SuggestJob logFilePath(final String logFilePath) {
-        this.logFilePath = logFilePath;
-        return this;
-    }
-
-    public SuggestJob logLevel(final String logLevel) {
-        this.logLevel = logLevel;
-        return this;
-    }
-
-    public SuggestJob useLocaleElasticsearch(final boolean useLocaleElasticsearch) {
-        this.useLocaleElasticsearch = useLocaleElasticsearch;
-        return this;
-    }
-
-    public SuggestJob remoteDebug() {
-        return jvmOptions(REMOTE_DEBUG_OPTIONS);
-    }
-
-    public SuggestJob jvmOptions(final String option) {
-        this.jvmOptions = option;
-        return this;
-    }
-
-    public SuggestJob lastaEnv(final String env) {
-        this.lastaEnv = env;
-        return this;
-    }
-
+    @Deprecated
     public String execute(final JobExecutor jobExecutor) {
         jobExecutor(jobExecutor);
         return execute();
     }
 
+    @Override
     public String execute() {
         final StringBuilder resultBuf = new StringBuilder();
 
@@ -173,7 +119,7 @@ public class SuggestJob {
         // WEB-INF/lib
         appendJarFile(cpSeparator, buf, new File(servletContext.getRealPath("/WEB-INF/lib")), "WEB-INF" + File.separator + "lib"
                 + File.separator);
-        // WEB-INF/crawler/lib
+        // WEB-INF/env/suggest/lib
         appendJarFile(cpSeparator, buf, new File(servletContext.getRealPath("/WEB-INF/env/suggest/lib")), "WEB-INF" + File.separator
                 + "env" + File.separator + "suggest" + File.separator + "lib" + File.separator);
         final File targetLibDir = new File(targetDir, "fess" + File.separator + "WEB-INF" + File.separator + "lib");
@@ -182,18 +128,11 @@ public class SuggestJob {
         }
         cmdList.add(buf.toString());
 
-        if (useLocaleElasticsearch) {
-            final String transportAddresses = System.getProperty(Constants.FESS_ES_TRANSPORT_ADDRESSES);
-            if (StringUtil.isNotBlank(transportAddresses)) {
-                cmdList.add("-D" + Constants.FESS_ES_TRANSPORT_ADDRESSES + "=" + transportAddresses);
+        if (useLocalElasticsearch) {
+            final String httpAddress = System.getProperty(Constants.FESS_ES_HTTP_ADDRESS);
+            if (StringUtil.isNotBlank(httpAddress)) {
+                cmdList.add("-D" + Constants.FESS_ES_HTTP_ADDRESS + "=" + httpAddress);
             }
-        }
-
-        final String clusterName = System.getProperty(Constants.FESS_ES_CLUSTER_NAME);
-        if (StringUtil.isNotBlank(clusterName)) {
-            cmdList.add("-D" + Constants.FESS_ES_CLUSTER_NAME + "=" + clusterName);
-        } else {
-            cmdList.add("-D" + Constants.FESS_ES_CLUSTER_NAME + "=" + fessConfig.getElasticsearchClusterName());
         }
 
         final String systemLastaEnv = System.getProperty("lasta.env");
@@ -299,37 +238,4 @@ public class SuggestJob {
         }
     }
 
-    private void addSystemProperty(final List<String> crawlerCmdList, final String name, final String defaultValue, final String appendValue) {
-        final String value = System.getProperty(name);
-        if (value != null) {
-            final StringBuilder buf = new StringBuilder();
-            buf.append("-D").append(name).append("=").append(value);
-            if (appendValue != null) {
-                buf.append(appendValue);
-            }
-            crawlerCmdList.add(buf.toString());
-        } else if (defaultValue != null) {
-            crawlerCmdList.add("-D" + name + "=" + defaultValue);
-        }
-    }
-
-    protected void deleteTempDir(final File ownTmpDir) {
-        if (ownTmpDir == null) {
-            return;
-        }
-        if (!FileUtils.deleteQuietly(ownTmpDir)) {
-            logger.warn("Could not delete a temp dir: " + ownTmpDir.getAbsolutePath());
-        }
-    }
-
-    protected void appendJarFile(final String cpSeparator, final StringBuilder buf, final File libDir, final String basePath) {
-        final File[] jarFiles = libDir.listFiles((FilenameFilter) (dir, name) -> name.toLowerCase().endsWith(".jar"));
-        if (jarFiles != null) {
-            for (final File file : jarFiles) {
-                buf.append(cpSeparator);
-                buf.append(basePath);
-                buf.append(file.getName());
-            }
-        }
-    }
 }

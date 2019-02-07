@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,14 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.codelibs.fess.es.config.cbean.ca;
+package org.codelibs.fess.tomcat.valve;
 
-import org.codelibs.fess.es.config.cbean.ca.bs.BsWebConfigToLabelCA;
+import org.apache.catalina.valves.ErrorReportValve;
 
-/**
- * @author ESFlute (using FreeGen)
- */
-public class WebConfigToLabelCA extends BsWebConfigToLabelCA {
+public class SuppressErrorReportValve extends ErrorReportValve {
+    public SuppressErrorReportValve() {
+        super();
+        setShowReport(false);
+        setShowServerInfo(false);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,33 @@ public class SearchLogPager implements Serializable {
 
     public static final String LOG_TYPE_SEARCH = "search";
 
+    public static final String LOG_TYPE_SEARCH_COUNT_HOUR = "search_count_hour_agg";
+
+    public static final String LOG_TYPE_SEARCH_COUNT_DAY = "search_count_day_agg";
+
+    public static final String LOG_TYPE_SEARCH_USER_HOUR = "search_user_hour_agg";
+
+    public static final String LOG_TYPE_SEARCH_USER_DAY = "search_user_day_agg";
+
+    public static final String LOG_TYPE_SEARCH_REQTIMEAVG_HOUR = "search_reqtimeavg_hour_agg";
+
+    public static final String LOG_TYPE_SEARCH_REQTIMEAVG_DAY = "search_reqtimeavg_day_agg";
+
+    public static final String LOG_TYPE_SEARCH_KEYWORD = "search_keyword_agg";
+
+    public static final String LOG_TYPE_SEARCH_ZEROHIT = "search_zerohit_agg";
+
+    public static final String LOG_TYPE_SEARCH_ZEROCLICK = "search_zeroclick_agg";
+
     public static final String LOG_TYPE_CLICK = "click";
 
+    public static final String LOG_TYPE_CLICK_COUNT = "click_count_agg";
+
     public static final String LOG_TYPE_FAVORITE = "favorite";
+
+    public static final String LOG_TYPE_FAVORITE_COUNT = "favorite_count_agg";
+
+    public static final String LOG_TYPE_USERINFO = "user_info";
 
     public static final int DEFAULT_PAGE_SIZE = 20;
 

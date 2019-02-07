@@ -15,7 +15,6 @@ fi
 
 # External elasticsearch cluster
 #ES_HTTP_URL=http://localhost:9200
-#ES_TRANSPORT_URL=localhost:9300
 #FESS_DICTIONARY_PATH=/var/lib/elasticsearch/config/
 
 # SSL truststore for certificate validation over https
@@ -36,6 +35,9 @@ fi
 
 # set to headless, just in case
 JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
+
+# maximum # keep-alive connections to maintain at once
+JAVA_OPTS="$JAVA_OPTS -Dhttp.maxConnections=20"
 
 # Force the JVM to use IPv4 stack
 if [ "x$FESS_USE_IPV4" != "x" ]; then
@@ -115,9 +117,6 @@ if [ "x$FESS_VAR_PATH" != "x" ]; then
 fi
 if [ "x$ES_HTTP_URL" != "x" ]; then
   FESS_JAVA_OPTS="$FESS_JAVA_OPTS -Dfess.es.http_address=$ES_HTTP_URL"
-fi
-if [ "x$ES_TRANSPORT_URL" != "x" ]; then
-  FESS_JAVA_OPTS="$FESS_JAVA_OPTS -Dfess.es.transport_addresses=$ES_TRANSPORT_URL"
 fi
 if [ "x$FESS_DICTIONARY_PATH" != "x" ]; then
   FESS_JAVA_OPTS="$FESS_JAVA_OPTS -Dfess.dictionary.path=$FESS_DICTIONARY_PATH"

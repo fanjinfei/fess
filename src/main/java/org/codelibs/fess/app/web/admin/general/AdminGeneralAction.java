@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,6 +168,10 @@ public class AdminGeneralAction extends FessAdminAction {
         fessConfig.storeSystemProperties();
         ComponentUtil.getLdapManager().updateConfig();
         ComponentUtil.getSystemHelper().refreshDesignJspFiles();
+
+        if (StringUtil.isNotBlank(form.logLevel)) {
+            ComponentUtil.getSystemHelper().setLogLevel(form.logLevel);
+        }
     }
 
     public static void updateForm(final FessConfig fessConfig, final EditForm form) {
@@ -209,6 +213,7 @@ public class AdminGeneralAction extends FessAdminAction {
         form.ldapMemberofAttribute = fessConfig.getLdapMemberofAttribute();
         form.notificationLogin = fessConfig.getNotificationLogin();
         form.notificationSearchTop = fessConfig.getNotificationSearchTop();
+        form.logLevel = ComponentUtil.getSystemHelper().getLogLevel().toUpperCase();
     }
 
     private void updateProperty(final String key, final String value) {

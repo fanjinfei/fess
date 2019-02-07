@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 CodeLibs Project and the Others.
+ * Copyright 2012-2019 CodeLibs Project and the Others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.xml.transform.TransformerException;
@@ -105,6 +106,8 @@ public class FessXpathTransformer extends XpathTransformer implements FessTransf
 
     protected boolean useGoogleOffOn = true;
 
+    protected Map<String, Boolean> fieldPrunedRuleMap = new HashMap<>();
+
     @PostConstruct
     public void init() {
         fessConfig = ComponentUtil.getFessConfig();
@@ -169,7 +172,11 @@ public class FessXpathTransformer extends XpathTransformer implements FessTransf
                 case XObject.CLASS_RTREEFRAG:
                 case XObject.CLASS_UNRESOLVEDVARIABLE:
                 default:
-                    final Node value = getXPathAPI().selectSingleNode(document, entry.getValue());
+                    final Boolean isPruned = fieldPrunedRuleMap.get(entry.getKey());
+                    Node value = getXPathAPI().selectSingleNode(document, entry.getValue());
+                    if (isPruned != null && isPruned.booleanValue()) {
+                        value = pruneNode(value);
+                    }
                     putResultDataBody(dataMap, entry.getKey(), value != null ? value.getTextContent() : null);
                     break;
                 }
@@ -455,19 +462,14 @@ public class FessXpathTransformer extends XpathTransformer implements FessTransf
         //  boost
         putResultDataBody(dataMap, fessConfig.getIndexFieldBoost(), crawlingConfig.getDocumentBoost());
         // label: labelType
-        final Set<String> labelTypeSet = new HashSet<>();
-        for (final String labelType : crawlingConfig.getLabelTypeValues()) {
-            labelTypeSet.add(labelType);
-        }
-        labelTypeSet.addAll(labelTypeHelper.getMatchedLabelValueSet(url));
-        putResultDataBody(dataMap, fessConfig.getIndexFieldLabel(), labelTypeSet);
+        putResultDataBody(dataMap, fessConfig.getIndexFieldLabel(), labelTypeHelper.getMatchedLabelValueSet(url));
         // role: roleType
         final List<String> roleTypeList = new ArrayList<>();
         stream(crawlingConfig.getPermissions()).of(stream -> stream.forEach(p -> roleTypeList.add(p)));
         putResultDataBody(dataMap, fessConfig.getIndexFieldRole(), roleTypeList);
         // virtualHosts
         putResultDataBody(dataMap, fessConfig.getIndexFieldVirtualHost(),
-                stream(crawlingConfig.getVirtualHosts()).get(stream -> stream.filter(StringUtil::isNotBlank).toArray(n -> new String[n])));
+                stream(crawlingConfig.getVirtualHosts()).get(stream -> stream.filter(StringUtil::isNotBlank).collect(Collectors.toList())));
         // id
         putResultDataBody(dataMap, fessConfig.getIndexFieldId(), crawlingInfoHelper.generateId(dataMap));
         // parentId
@@ -916,5 +918,10 @@ public class FessXpathTransformer extends XpathTransformer implements FessTransf
             return new URL(url);
         }
         return null;
+    }
+
+    public void addFieldRule(final String name, final String xpath, final boolean isPruned) {
+        addFieldRule(name, xpath);
+        fieldPrunedRuleMap.put(name, isPruned);
     }
 }
